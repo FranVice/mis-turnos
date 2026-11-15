@@ -1,20 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { colors } from './src/components/ui';
+import { useAppData } from './src/data/AppData';
+import { CalendarScreen } from './src/screens/CalendarScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
+export function Root() {
+  const { authReady, signedIn, recovering } = useAppData();
+  if (!authReady) return <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg}}><ActivityIndicator accessibilityLabel="Cargando sesión" /></View>;
+  return signedIn && !recovering ? <CalendarScreen /> : <LoginScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default Root;
