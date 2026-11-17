@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   PanResponder,
@@ -18,8 +19,9 @@ import { MonthGrid } from '../components/MonthGrid';
 import { SchedulesEditor } from '../components/SchedulesEditor';
 import { FormMode, ShiftForm } from '../components/ShiftForm';
 import { Banner, Button, colors, ToastView, useToast } from '../components/ui';
+import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../shared/theme';
 import { useAppData } from '../data/AppData';
-import { monthOf, monthTitle, sameMonth, shiftMonth } from '../lib/dates';
+import { MonthRef, monthOf, monthTitle, sameMonth, shiftMonth } from '../lib/dates';
 import type { Shift } from '../lib/types';
 
 type Sheet =
@@ -119,51 +121,59 @@ export function CalendarScreen() {
         </View>
       ) : null}
 
-      <View style={{ paddingHorizontal: 14, paddingTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Text style={{ fontSize: 25, fontWeight: '800', color: colors.text, letterSpacing: -0.5 }}>Mis Turnos</Text><Button title="Actualizar" variant="ghost" onPress={refresh} loading={loading} /></View>
-      {/* Cabecera: mes y navegación */}
-      <View style={s.header}>
-        <Pressable accessibilityRole="button" onPress={() => goMonth(-1)} hitSlop={10} style={s.navBtn} accessibilityLabel="Mes anterior">
-          <Ionicons name="chevron-back" size={26} color={colors.text} />
-        </Pressable>
-        <Text style={s.monthTitle} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-          {monthTitle(month)}
-        </Text>
-        <Pressable onPress={() => goMonth(1)} hitSlop={10} style={s.navBtn} accessibilityLabel="Mes siguiente">
-          <Ionicons name="chevron-forward" size={26} color={colors.text} />
-        </Pressable>
-        <Pressable
-          onPress={() => setMonth(monthOf(today))}
-          disabled={isCurrentMonth}
-          style={[s.todayBtn, isCurrentMonth && { opacity: 0.35 }]}
-          accessibilityLabel="Volver a hoy"
-        >
-          <Text style={s.todayBtnText}>Hoy</Text>
-        </Pressable>
-        <Pressable onPress={() => setSheet({ type: 'schedules' })} hitSlop={8} style={s.navBtn} accessibilityLabel="Horarios habituales y cuenta">
-          <Ionicons name="settings-outline" size={24} color={colors.text} />
-        </Pressable>
+      {/* Cabecera compacta: mes, navegación y acciones en dos filas bajas. */}
+      <View style={s.topRow}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.appName}>Mis Turnos</Text>
+          <Text style={s.monthTitle} accessibilityRole="header" numberOfLines={1}>
+            {monthName(month)} <Text style={s.monthYear}>{month.year}</Text>
+          </Text>
+        </View>
+        <IconButton label="Actualizar" onPress={refresh} disabled={loading}>
+          {loading ? <ActivityIndicator color={colors.muted} /> : <Ionicons name="refresh" size={21} color={colors.text} />}
+        </IconButton>
+        <IconButton label="Horarios habituales y cuenta" onPress={() => setSheet({ type: 'schedules' })}>
+          <Ionicons name="settings-outline" size={21} color={colors.text} />
+        </IconButton>
       </View>
 
-      <ScrollView
-        contentContainerStyle={s.scroll}
-        refreshControl={<RefreshControl refreshing={pullRefreshing} onRefresh={onPullRefresh} />}
-      >
-        {/* Leyenda */}
+      <View style={s.navRow}>
+        <View style={s.navGroup}>
+          <IconButton label="Mes anterior" onPress={() => goMonth(-1)} compact>
+            <Ionicons name="chevron-back" size={20} color={colors.text} />
+          </IconButton>
+          <Pressable
+            onPress={() => setMonth(monthOf(today))}
+            disabled={isCurrentMonth}
+            accessibilityRole="button"
+            accessibilityLabel="Volver a hoy"
+            style={(state: InteractionState) => [s.todayBtn, webTransition, pressFeedback(state, colors.elevated), isCurrentMonth && { opacity: 0.4 }]}
+          >
+            <Text style={s.todayBtnText}>Hoy</Text>
+          </Pressable>
+          <IconButton label="Mes siguiente" onPress={() => goMonth(1)} compact>
+            <Ionicons name="chevron-forward" size={20} color={colors.text} />
+          </IconButton>
+        </View>
         <View style={s.legend}>
           {people.map((p) => (
             <View key={p.id} style={s.legendItem}>
               <View style={[s.legendSwatch, { backgroundColor: p.color }]}>
                 <Text style={s.legendInitial}>{p.initial}</Text>
               </View>
-              <Text style={s.legendName}>
+              <Text style={[s.legendName, p.id === me?.id && { color: colors.text }]} numberOfLines={1}>
                 {p.name}
                 {p.id === me?.id ? ' (tú)' : ''}
               </Text>
             </View>
           ))}
-          {loading ? <Text style={s.syncing}>Actualizando…</Text> : null}
         </View>
+      </View>
 
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        refreshControl={<RefreshControl refreshing={pullRefreshing} onRefresh={onPullRefresh} tintColor={colors.muted} />}
+      >
         {!data.online ? <Banner kind="warn">Sin conexión. Conservamos los últimos datos confirmados; necesitas internet para guardar.</Banner> : null}
         {loadError ? (
           <Banner kind="error" action={{ label: 'Reintentar', onPress: refresh }}>
@@ -227,7 +237,7 @@ export function CalendarScreen() {
                 setMonth(monthOf(today));
                 setSheet({ type: 'day', date: today });
               }}
-              icon={<Ionicons name="today-outline" size={20} color="#FFFFFF" />}
+              icon={<Ionicons name="today-outline" size={20} color={colors.onPrimary} />}
               style={{ flex: 1 }}
             />
           </View>
@@ -244,7 +254,7 @@ export function CalendarScreen() {
         onRequestClose={closeSheet}
         transparent={false}
       >
-        <View style={s.sheet}>
+        <View style={[s.sheet, Platform.OS === 'web' && { paddingTop: insets.top }]}>
           <View style={s.sheetBar}>
             {sheet?.type === 'form' && sheet.backToDay ? (
               <Pressable onPress={() => setSheet({ type: 'day', date: sheet.backToDay! })} hitSlop={10} style={s.sheetBack}>
@@ -294,47 +304,102 @@ export function CalendarScreen() {
   );
 }
 
+// «Noviembre 2026» -> «Noviembre»; el año se muestra aparte, más tenue.
+const monthName = (m: MonthRef) => monthTitle(m).replace(/\s*\d{4}$/, '');
+
+function IconButton({
+  label,
+  onPress,
+  disabled,
+  compact,
+  children,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  compact?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={6}
+      style={(state: InteractionState) => [
+        compact ? s.iconBtnCompact : s.iconBtn,
+        webTransition,
+        pressFeedback(state, colors.elevated),
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  demo: { backgroundColor: '#FFE066', paddingVertical: 6, paddingHorizontal: 12 },
-  demoText: { fontSize: 12, fontWeight: '800', color: '#5C4400', textAlign: 'center', letterSpacing: 0.3 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 4, paddingTop: 6, paddingBottom: 4, gap: 2 },
-  navBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  monthTitle: { flex: 1, fontSize: 20, fontWeight: '800', color: colors.text, textAlign: 'center' },
-  todayBtn: {
-    height: 36,
-    paddingHorizontal: 14,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: colors.today,
+  demo: { backgroundColor: colors.warnBg, paddingVertical: 6, paddingHorizontal: 12 },
+  demoText: { fontSize: 12, fontWeight: '800', color: colors.warnText, textAlign: 'center', letterSpacing: 0.3 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingTop: 4 },
+  appName: { fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 1.2, textTransform: 'uppercase' },
+  monthTitle: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.6 },
+  monthYear: { fontWeight: '500', color: colors.faint },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 2,
   },
-  todayBtnText: { color: colors.today, fontWeight: '800', fontSize: 15 },
+  iconBtnCompact: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  navGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.pill,
+    padding: 2,
+  },
+  todayBtn: { height: 36, paddingHorizontal: 14, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  todayBtnText: { color: colors.primary, fontWeight: '800', fontSize: 15 },
+  legend: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
+  legendSwatch: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  legendInitial: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
+  legendName: { fontSize: 14, fontWeight: '600', color: colors.muted, flexShrink: 1 },
   scroll: { paddingHorizontal: 3, paddingBottom: 16, gap: 8 },
-  legend: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 6, paddingVertical: 4 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendSwatch: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  legendInitial: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
-  legendName: { fontSize: 15, fontWeight: '600', color: colors.text },
-  syncing: { marginLeft: 'auto', fontSize: 13, color: colors.faint },
   tip: { textAlign: 'center', fontSize: 13, color: colors.faint, marginTop: 4 },
   bottomBar: {
     paddingHorizontal: 12,
     paddingTop: 10,
     gap: 8,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.line,
-    boxShadow: '0 -2px 10px rgba(28, 27, 25, 0.05)',
+    ...shadow.raised,
   },
   bottomActions: { flexDirection: 'row', gap: 10 },
   selCount: { fontSize: 15, fontWeight: '700', color: colors.text, textAlign: 'center' },
   sheet: {
     flex: 1,
-    backgroundColor: colors.card,
-    // En web (solo revisión) se limita al ancho de un iPhone.
+    backgroundColor: colors.surface,
+    // En web (PWA) se limita al ancho de un iPhone.
     ...(Platform.OS === 'web' ? { width: '100%' as const, maxWidth: 760, alignSelf: 'center' as const } : null),
   },
   sheetBar: {
@@ -342,10 +407,10 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 10,
     paddingBottom: 4,
     minHeight: 48,
   },
   sheetBack: { flexDirection: 'row', alignItems: 'center' },
-  sheetBarText: { fontSize: 17, color: colors.text },
+  sheetBarText: { fontSize: 17, color: colors.primary },
 });

@@ -110,10 +110,10 @@ const s = StyleSheet.create({
   content: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 8 },
   logo: { flexDirection: 'row', alignSelf: 'center', marginBottom: 12 },
   logoDot: { width: 44, height: 44, borderRadius: 22, opacity: 0.9 },
-  title: { fontSize: 32, fontWeight: '800', color: colors.text, textAlign: 'center' },
+  title: { fontSize: 32, fontWeight: '800', color: colors.text, textAlign: 'center', letterSpacing: -0.8 },
   subtitle: { fontSize: 16, color: colors.muted, textAlign: 'center', marginBottom: 20 },
   form: { gap: 8 },
-  label: { fontSize: 14, fontWeight: '700', color: colors.muted },
+  label: { fontSize: 13, fontWeight: '700', color: colors.faint, textTransform: 'uppercase', letterSpacing: 0.8 },
   input: {
     minHeight: 52,
     borderRadius: 12,

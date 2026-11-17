@@ -5,6 +5,7 @@ import { useAppData } from '../data/AppData';
 import { addDays, endsNextDay, longDate } from '../lib/dates';
 import { isAllDay, KIND_COLOR, KIND_LABEL, Shift } from '../lib/types';
 import { Button, colors, tint } from './ui';
+import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../shared/theme';
 
 // Detalle de un día: nombres completos, tipo y horas. Tocar un turno lo edita.
 export function DayDetail({
@@ -41,20 +42,16 @@ export function DayDetail({
               accessibilityRole="button"
               accessibilityHint="Abre el turno para editarlo"
               onPress={() => onEdit(sh)}
-              style={({ pressed }) => [s.card, { borderLeftColor: color, backgroundColor: tint(color, 0.08) }, pressed && { opacity: 0.7 }]}
+              style={(state: InteractionState) => [s.card, webTransition, { borderLeftColor: color }, pressFeedback(state, colors.elevated)]}
             >
               <View style={[s.avatar, { backgroundColor: color }]}>
                 <Text style={s.avatarText}>{p?.initial ?? '?'}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.name}>{p?.name ?? 'Persona desconocida'}</Text>
-                {KIND_COLOR[sh.kind] ? (
-                  <View style={[s.kindBadge, { backgroundColor: tint(KIND_COLOR[sh.kind]!, 0.16) }]}>
-                    <Text style={[s.kindBadgeText, { color: KIND_COLOR[sh.kind] }]}>{KIND_LABEL[sh.kind]}</Text>
-                  </View>
-                ) : (
-                  <Text style={s.kind}>{KIND_LABEL[sh.kind]}</Text>
-                )}
+                <View style={[s.kindBadge, { backgroundColor: tint(KIND_COLOR[sh.kind], 0.18) }]}>
+                  <Text style={[s.kindBadgeText, { color: KIND_COLOR[sh.kind] }]}>{KIND_LABEL[sh.kind]}</Text>
+                </View>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={s.hours}>
@@ -72,7 +69,7 @@ export function DayDetail({
           title="Añadir turno"
           onPress={onAdd}
           disabled={full}
-          icon={<Ionicons name="add" size={22} color="#FFFFFF" />}
+          icon={<Ionicons name="add" size={22} color={colors.onPrimary} />}
         />
         {full ? <Text style={s.fullHint}>Los dos ya tenéis turno este día. Toca uno para editarlo.</Text> : null}
       </View>
@@ -89,7 +86,7 @@ const s = StyleSheet.create({
   todayTag: {
     alignSelf: 'flex-start',
     backgroundColor: colors.today,
-    color: '#FFFFFF',
+    color: colors.onPrimary,
     fontWeight: '800',
     fontSize: 13,
     paddingHorizontal: 10,
@@ -104,10 +101,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 7,
     padding: 10,
-    borderRadius: 14,
-    borderLeftWidth: 5,
+    borderRadius: radius.lg,
+    borderLeftWidth: 4,
     minHeight: 72,
-    boxShadow: '0 1px 3px rgba(28, 27, 25, 0.06)',
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    ...shadow.card,
   },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
@@ -123,7 +123,7 @@ const s = StyleSheet.create({
     gap: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.line,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
   },
   fullHint: { fontSize: 14, color: colors.muted, textAlign: 'center' },
 });

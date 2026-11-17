@@ -105,7 +105,7 @@ const s = StyleSheet.create({
   content: { padding: 20, gap: 16 },
   title: { fontSize: 26, fontWeight: '800', color: colors.text },
   intro: { fontSize: 15, color: colors.muted, lineHeight: 21, marginTop: -6 },
-  personBlock: { backgroundColor: colors.card, borderRadius: 16, padding: 14, gap: 14, borderWidth: 1, borderColor: colors.line },
+  personBlock: { backgroundColor: colors.card, borderRadius: 18, padding: 14, gap: 14, borderWidth: 1, borderColor: colors.line },
   personHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   dot: { width: 14, height: 14, borderRadius: 7 },
   personName: { fontSize: 20, fontWeight: '800', color: colors.text },
@@ -128,5 +128,5 @@ function ColorPicker({person}: {person: Person}) {
     setBusy(true); setError(null);
     try { const result = await saveColor(person.id, color); if (!result.ok) setError('No se pudo guardar el color.'); }
     catch { setError('Sin conexión. Vuelve a intentarlo.'); } finally {setBusy(false);}
-  }} style={{width: 44, height: 44, borderRadius: 22, backgroundColor: color, alignItems: 'center', justifyContent: 'center'}}><Text style={{color: '#fff', fontSize: 20}}>{person.color === color ? '✓' : ''}</Text></Pressable>)}</View>{error ? <Banner kind="error">{error}</Banner> : null}</View>;
+  }} style={{width: 44, height: 44, borderRadius: 22, backgroundColor: color, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: person.color === color ? colors.text : 'transparent'}}><Text style={{color: '#fff', fontSize: 20}}>{person.color === color ? '✓' : ''}</Text></Pressable>)}</View>{error ? <Banner kind="error">{error}</Banner> : null}</View>;
 }

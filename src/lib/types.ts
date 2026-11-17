@@ -1,4 +1,6 @@
-export type ShiftKind = 'manana' | 'tarde' | 'noche' | 'libre' | 'vacaciones' | 'otro';
+import { kindColors } from '../shared/theme';
+
+export type ShiftKind ='manana' | 'tarde' | 'noche' | 'libre' | 'vacaciones' | 'otro';
 
 export const SHIFT_KINDS: ShiftKind[] = ['manana', 'tarde', 'noche', 'libre', 'vacaciones', 'otro'];
 export const TIMED_KINDS: ShiftKind[] = ['manana', 'tarde', 'noche'];
@@ -13,12 +15,8 @@ export const KIND_LABEL: Record<ShiftKind, string> = {
   otro: 'Otro',
 };
 
-// Color propio de los tipos de día completo; los turnos con horas usan el color de la persona.
-export const KIND_COLOR: Partial<Record<ShiftKind, string>> = {
-  libre: '#2F9E44',
-  vacaciones: '#9C36B5',
-  otro: '#868E96',
-};
+// Cada tipo de turno tiene su color (definido en el tema compartido).
+export const KIND_COLOR: Record<ShiftKind, string> = kindColors;
 
 export interface Person {
   id: string;

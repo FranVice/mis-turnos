@@ -25,3 +25,11 @@ Para repetir la interfaz: instala Python y Playwright, ten Microsoft Edge dispon
 ## Decisiones y límites
 
 Se conserva `calendars`/`people` como grupo y membresías. La pertenencia se asigna exclusivamente en administración; no hay invitaciones públicas. Otro se trata como día completo. No hay service worker, caché de turnos, escritura offline, push, nóminas ni fichaje. Las horas repetidas de octubre se interpretan con horario estándar; las inexistentes se rechazan. Las migraciones nuevas preservan datos; no se ha ejecutado ninguna contra el proyecto remoto.
+
+# Rediseño oscuro · 17 de noviembre de 2026
+
+- Tema centralizado en `src/shared/theme/` (colores, colores por tipo de turno, radios, sombras, hover/pulsación). `components/ui.tsx` lo reexporta para no romper importaciones.
+- Hueco superior en la PWA de iPhone: `apple-mobile-web-app-status-bar-style` estaba en `default`, así que iOS reservaba la franja de la barra de estado y, con `viewport-fit=cover`, el área segura se sumaba encima. Además había dos filas de cabecera altas (título con botón de 50 px y fila de mes). Ahora: `black-translucent` (la app dibuja bajo la barra de estado y `SafeAreaView` aplica el inset una sola vez) y cabecera compacta. La hoja modal en web añade `insets.top` para no quedar bajo la Dynamic Island.
+- Validado: typecheck, lint, 9 tests, `scripts/check_web.py` (320–768 px y flujos de alta, edición, eliminación, varios días y colores; sin errores JS) y `pnpm build`.
+- No verificable aquí: el inset real en un iPhone con PWA instalada (Chromium devuelve 0 en `env(safe-area-inset-top)`), Realtime entre dos sesiones reales y el selector de hora nativo de iOS en tema oscuro.
+- Reversión: etiqueta `estable-pre-oscuro` (commit 2c2a439).

@@ -12,31 +12,18 @@ import {
   ViewStyle,
 } from 'react-native';
 
-export const colors = {
-  bg: '#F6F5F2',
-  card: '#FFFFFF',
-  text: '#1C1B19',
-  muted: '#6B6A66',
-  faint: '#75736D',
-  line: '#E4E2DC',
-  primary: '#1C1B19',
-  today: '#D9480F',
-  danger: '#C92A2A',
-  dangerBg: '#FFF0F0',
-  warnBg: '#FFF6DB',
-  warnText: '#7A5A00',
-  okBg: '#E9F8EE',
-  okText: '#1E6B3A',
-  selected: '#1C1B19',
-};
+import {
+  colors,
+  pressFeedback,
+  radius,
+  shadow,
+  tint,
+  webTransition,
+  type InteractionState,
+} from '../shared/theme';
 
-// Color de persona atenuado para fondos.
-export function tint(hex: string, alpha = 0.14) {
-  const a = Math.round(alpha * 255)
-    .toString(16)
-    .padStart(2, '0');
-  return `${hex}${a}`;
-}
+// Se reexportan para que los componentes existentes sigan importando desde aquí.
+export { colors, lighten, tint } from '../shared/theme';
 
 // ---------- Botón ----------
 
@@ -66,11 +53,12 @@ export function Button({
       accessibilityLabel={title}
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }) => [
+      style={(state: InteractionState) => [
         styles.button,
+        webTransition,
         { backgroundColor: v.bg, borderColor: v.border },
-        (disabled || loading) && { opacity: 0.45 },
-        pressed && { opacity: 0.75 },
+        pressFeedback(state, v.hover),
+        (disabled || loading) && { opacity: 0.4 },
         style,
       ]}
     >
@@ -86,11 +74,11 @@ export function Button({
   );
 }
 
-const buttonVariants: Record<ButtonVariant, { bg: string; fg: string; border: string }> = {
-  primary: { bg: colors.primary, fg: '#FFFFFF', border: colors.primary },
-  secondary: { bg: colors.card, fg: colors.text, border: colors.line },
-  danger: { bg: colors.card, fg: colors.danger, border: '#F1C0C0' },
-  ghost: { bg: 'transparent', fg: colors.text, border: 'transparent' },
+const buttonVariants: Record<ButtonVariant, { bg: string; fg: string; border: string; hover: string }> = {
+  primary: { bg: colors.primary, fg: colors.onPrimary, border: colors.primary, hover: '#7A9FFF' },
+  secondary: { bg: colors.card, fg: colors.text, border: colors.line, hover: colors.elevated },
+  danger: { bg: colors.dangerBg, fg: colors.danger, border: '#5A2C33', hover: '#4A262C' },
+  ghost: { bg: 'transparent', fg: colors.text, border: 'transparent', hover: colors.card },
 };
 
 // ---------- Selector segmentado ----------
@@ -121,9 +109,11 @@ export function Segmented<T extends string>({
             accessibilityRole="radio"
             aria-checked={active}
             onPress={() => onChange(o.value)}
-            style={[
+            style={(state: InteractionState) => [
               styles.segment,
-              active && { backgroundColor: o.color ? tint(accent, 0.16) : colors.card, borderColor: accent },
+              webTransition,
+              pressFeedback(state, colors.elevated),
+              active && { backgroundColor: tint(accent, 0.2), borderColor: accent },
             ]}
           >
             {o.color ? <View style={[styles.dot, { backgroundColor: o.color }]} /> : null}
@@ -207,7 +197,10 @@ export function ToastView({ bottom = 24 }: { bottom?: number }) {
   if (!message) return null;
   return (
     <Animated.View pointerEvents="none" style={[styles.toast, { bottom, opacity }]} accessibilityLiveRegion="polite">
-      <Text style={styles.toastText}>✓ {message}</Text>
+      <Text style={styles.toastText}>
+        <Text style={{ color: colors.okText }}>✓ </Text>
+        {message}
+      </Text>
     </Animated.View>
   );
 }
@@ -215,7 +208,7 @@ export function ToastView({ bottom = 24 }: { bottom?: number }) {
 export const styles = StyleSheet.create({
   button: {
     minHeight: 50,
-    borderRadius: 14,
+    borderRadius: radius.lg,
     borderWidth: 1,
     paddingHorizontal: 18,
     alignItems: 'center',
@@ -227,10 +220,10 @@ export const styles = StyleSheet.create({
   segment: { minWidth: 85,
     flex: 1,
     minHeight: 48,
-    borderRadius: 12,
+    borderRadius: radius.md + 2,
     borderWidth: 1.5,
     borderColor: colors.line,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -239,7 +232,7 @@ export const styles = StyleSheet.create({
   },
   segmentText: { fontSize: 16, color: colors.muted, fontWeight: '500' },
   dot: { width: 12, height: 12, borderRadius: 6 },
-  banner: { borderRadius: 12, padding: 12, gap: 6 },
+  banner: { borderRadius: radius.md + 2, padding: 12, gap: 6 },
   bannerText: { fontSize: 15, lineHeight: 20 },
   bannerAction: { alignSelf: 'flex-start', paddingVertical: 4 },
   bannerActionText: { fontSize: 15, fontWeight: '700', textDecorationLine: 'underline' },
@@ -247,14 +240,13 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     alignSelf: 'center',
     maxWidth: '90%',
-    backgroundColor: colors.text,
+    backgroundColor: colors.elevated,
+    borderWidth: 1,
+    borderColor: colors.line,
     paddingHorizontal: 18,
     paddingVertical: 12,
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    borderRadius: radius.pill,
+    ...shadow.raised,
   },
-  toastText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', textAlign: 'center' },
+  toastText: { color: colors.text, fontSize: 15, fontWeight: '600', textAlign: 'center' },
 });

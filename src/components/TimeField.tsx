@@ -30,6 +30,7 @@ export function TimeField({
             // En iOS el formato 24 h lo da la configuración regional.
             locale="es-ES"
             onValueChange={(_e, d) => onChange(dateToTime(d))}
+            themeVariant="dark"
             style={s.iosPicker}
           />
         ) : (
@@ -78,7 +79,9 @@ function AndroidTime({
 const s = StyleSheet.create({
   wrap: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -91,7 +94,7 @@ const s = StyleSheet.create({
     minHeight: 40,
     paddingHorizontal: 14,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: colors.elevated,
     borderWidth: 1,
     borderColor: colors.line,
     justifyContent: 'center',
@@ -102,7 +105,7 @@ const s = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: colors.text,
-    backgroundColor: colors.card,
+    backgroundColor: colors.elevated,
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: 8,
