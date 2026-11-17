@@ -33,6 +33,17 @@ function seedShifts(): Shift[] {
         start: week === 0 ? '06:00' : '14:00', end: week === 0 ? '14:00' : '22:00',
         version: 1, updatedBy: null,
       });
+    } else {
+      shifts.push({
+        id: newId(), calendarId: CAL, personId: 'demo-franklin', date: day,
+        kind: 'libre', start: '00:00', end: '00:00', version: 1, updatedBy: null,
+      });
+    }
+    if (wd === 3 && Math.floor(i / 7) === 2) {
+      shifts.push({
+        id: newId(), calendarId: CAL, personId: 'demo-almudena', date: day,
+        kind: 'vacaciones', start: '00:00', end: '00:00', version: 1, updatedBy: null,
+      });
     }
     // Almudena: horarios variados, incluido alguno que acaba al día siguiente.
     if (wd === 0 || wd === 2 || wd === 4) {

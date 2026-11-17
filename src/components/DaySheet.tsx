@@ -3,7 +3,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
 import { addDays, endsNextDay, longDate } from '../lib/dates';
-import { isAllDay, KIND_LABEL, Shift } from '../lib/types';
+import { isAllDay, KIND_COLOR, KIND_LABEL, Shift } from '../lib/types';
 import { Button, colors, tint } from './ui';
 
 // Detalle de un día: nombres completos, tipo y horas. Tocar un turno lo edita.
@@ -48,7 +48,13 @@ export function DayDetail({
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.name}>{p?.name ?? 'Persona desconocida'}</Text>
-                <Text style={s.kind}>{KIND_LABEL[sh.kind]}</Text>
+                {KIND_COLOR[sh.kind] ? (
+                  <View style={[s.kindBadge, { backgroundColor: tint(KIND_COLOR[sh.kind]!, 0.16) }]}>
+                    <Text style={[s.kindBadgeText, { color: KIND_COLOR[sh.kind] }]}>{KIND_LABEL[sh.kind]}</Text>
+                  </View>
+                ) : (
+                  <Text style={s.kind}>{KIND_LABEL[sh.kind]}</Text>
+                )}
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={s.hours}>
@@ -101,11 +107,14 @@ const s = StyleSheet.create({
     borderRadius: 14,
     borderLeftWidth: 5,
     minHeight: 72,
+    boxShadow: '0 1px 3px rgba(28, 27, 25, 0.06)',
   },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   name: { fontSize: 18, fontWeight: '700', color: colors.text },
   kind: { fontSize: 15, color: colors.muted, marginTop: 2 },
+  kindBadge: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2, marginTop: 3 },
+  kindBadgeText: { fontSize: 14, fontWeight: '700' },
   hours: { fontSize: 17, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
   nextDay: { fontSize: 12, color: colors.warnText, fontWeight: '600' },
   footer: {

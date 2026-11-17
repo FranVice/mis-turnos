@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { compactTime, endsNextDay, MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../lib/dates';
-import { isAllDay, KIND_LABEL, type Person, type Shift } from '../lib/types';
+import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../lib/types';
 import { colors, tint } from './ui';
 
 interface Props {
@@ -113,12 +113,16 @@ const DayCell = memo(function DayCell({
       {shifts?.map((sh) => {
         const p = personById(sh.personId);
         const color = p?.color ?? colors.muted;
+        const kindColor = KIND_COLOR[sh.kind];
         return (
-          <View key={sh.id} style={[s.pill, { backgroundColor: tint(color, 0.16), borderLeftColor: color }]}>
+          <View
+            key={sh.id}
+            style={[s.pill, { backgroundColor: tint(kindColor ?? color, kindColor ? 0.2 : 0.16), borderLeftColor: color }]}
+          >
             <Text style={[s.pillInitial, { color }]}>{p?.initial ?? '?'}</Text>
             {/* Entrada arriba y salida abajo: así caben las horas en el ancho del iPhone. */}
             <View style={s.pillTimes}>
-              {isAllDay(sh.kind) ? <Text style={{fontSize: 9, lineHeight: 15, color: colors.text}} numberOfLines={1}>{KIND_LABEL[sh.kind]}</Text> : <>
+              {isAllDay(sh.kind) ? <Text style={[s.pillAllDay, { color: kindColor ?? colors.text }]} numberOfLines={1}>{sh.kind === 'vacaciones' ? 'Vacac.' : KIND_LABEL[sh.kind]}</Text> : <>
               <Text style={s.pillStart} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
                 {compactTime(sh.start)}
               </Text>
@@ -146,14 +150,15 @@ const s = StyleSheet.create({
     minHeight: 100,
     margin: 1,
     padding: 2,
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: colors.card,
     gap: 2,
     borderWidth: 1.5,
     borderColor: 'transparent',
+    boxShadow: '0 1px 2px rgba(28, 27, 25, 0.07)',
   },
-  cellEmpty: { backgroundColor: 'transparent' },
-  cellToday: { borderColor: colors.today },
+  cellEmpty: { backgroundColor: 'transparent', boxShadow: 'none' },
+  cellToday: { borderColor: colors.today, backgroundColor: '#FFF8F3' },
   cellSelected: { borderColor: colors.selected, backgroundColor: '#EDEBE6' },
   dayRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   dayNumWrap: { minWidth: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
@@ -174,7 +179,7 @@ const s = StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderRadius: 4,
+    borderRadius: 5,
     borderLeftWidth: 3,
     paddingLeft: 2,
     paddingRight: 1,
@@ -183,6 +188,7 @@ const s = StyleSheet.create({
   },
   pillInitial: { fontSize: 10, fontWeight: '900', lineHeight: 15 },
   pillTimes: { flex: 1 },
+  pillAllDay: { fontSize: 9, lineHeight: 15, fontWeight: '800' },
   pillStart: { fontSize: 13, lineHeight: 15, fontWeight: '800', color: colors.text, letterSpacing: -0.4 },
   pillEnd: { fontSize: 13, lineHeight: 15, fontWeight: '600', color: colors.muted, letterSpacing: -0.4 },
   nextDay: { fontSize: 9, fontWeight: '800', color: colors.warnText },

@@ -119,7 +119,7 @@ export function CalendarScreen() {
         </View>
       ) : null}
 
-      <View style={{ paddingHorizontal: 14, paddingTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Text style={{ fontSize: 25, fontWeight: '800', color: colors.text }}>Mis Turnos</Text><Button title="Actualizar" variant="ghost" onPress={refresh} loading={loading} /></View>
+      <View style={{ paddingHorizontal: 14, paddingTop: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Text style={{ fontSize: 25, fontWeight: '800', color: colors.text, letterSpacing: -0.5 }}>Mis Turnos</Text><Button title="Actualizar" variant="ghost" onPress={refresh} loading={loading} /></View>
       {/* Cabecera: mes y navegación */}
       <View style={s.header}>
         <Pressable accessibilityRole="button" onPress={() => goMonth(-1)} hitSlop={10} style={s.navBtn} accessibilityLabel="Mes anterior">
@@ -315,7 +315,7 @@ const s = StyleSheet.create({
   scroll: { paddingHorizontal: 3, paddingBottom: 16, gap: 8 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 6, paddingVertical: 4 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendSwatch: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  legendSwatch: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   legendInitial: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
   legendName: { fontSize: 15, fontWeight: '600', color: colors.text },
   syncing: { marginLeft: 'auto', fontSize: 13, color: colors.faint },
@@ -327,6 +327,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.card,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.line,
+    boxShadow: '0 -2px 10px rgba(28, 27, 25, 0.05)',
   },
   bottomActions: { flexDirection: 'row', gap: 10 },
   selCount: { fontSize: 15, fontWeight: '700', color: colors.text, textAlign: 'center' },

@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
 import { endsNextDay, isValidTime, longDate, shortDate } from '../lib/dates';
-import { isAllDay, KIND_LABEL, SaveError, Shift, ShiftKind, SHIFT_KINDS } from '../lib/types';
+import { isAllDay, KIND_COLOR, KIND_LABEL,SaveError, Shift, ShiftKind, SHIFT_KINDS } from '../lib/types';
 import { TimeField } from './TimeField';
 import { Banner, Button, colors, confirmAction, Segmented } from './ui';
 
@@ -215,7 +215,7 @@ export function ShiftForm({
 
         <Text style={s.label}>Turno</Text>
         <Segmented
-          options={SHIFT_KINDS.map((k) => ({ value: k, label: KIND_LABEL[k] }))}
+          options={SHIFT_KINDS.map((k) => ({ value: k, label: KIND_LABEL[k], color: KIND_COLOR[k] }))}
           value={kind}
           onChange={(v) => {
             chooseSchedule(personId, v);

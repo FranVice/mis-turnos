@@ -13,6 +13,13 @@ export const KIND_LABEL: Record<ShiftKind, string> = {
   otro: 'Otro',
 };
 
+// Color propio de los tipos de día completo; los turnos con horas usan el color de la persona.
+export const KIND_COLOR: Partial<Record<ShiftKind, string>> = {
+  libre: '#2F9E44',
+  vacaciones: '#9C36B5',
+  otro: '#868E96',
+};
+
 export interface Person {
   id: string;
   calendarId: string;
