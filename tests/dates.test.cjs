@@ -1,5 +1,5 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const ts=require('typescript');const fs=require('node:fs');
-const output=ts.transpileModule(fs.readFileSync('src/lib/dates.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const output=ts.transpileModule(fs.readFileSync('src/shared/lib/dates.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
 const domain={};new Function('exports',output)(domain);
 test('calendario lunes primero, bisiesto y cambios de mes',()=>{
  assert.equal(domain.weekdayIndex('2026-11-16'),0);

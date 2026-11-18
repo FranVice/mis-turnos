@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
-import { isValidTime } from '../lib/dates';
-import { KIND_LABEL, Person, ShiftKind, TIMED_KINDS } from '../lib/types';
+import { isValidTime } from '../../../shared/lib/dates';
+import { KIND_LABEL, Person, ShiftKind, TIMED_KINDS } from '../types';
 import { TimeField } from './TimeField';
-import { Banner, Button, colors, confirmAction, useToast } from './ui';
+import { Banner, Button, colors, confirmAction, useToast } from '../../../shared/ui';
 
 // «Horarios habituales»: horas por persona para rellenar el formulario.
 // Cambiarlas no modifica los turnos ya guardados.

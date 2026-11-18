@@ -2,10 +2,10 @@ import * as Haptics from 'expo-haptics';
 import React, { useMemo, useRef, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
-import { endsNextDay, isValidTime, longDate, shortDate } from '../lib/dates';
-import { isAllDay, KIND_COLOR, KIND_LABEL,SaveError, Shift, ShiftKind, SHIFT_KINDS } from '../lib/types';
+import { endsNextDay, isValidTime, longDate, shortDate } from '../../../shared/lib/dates';
+import { isAllDay, KIND_COLOR, KIND_LABEL,SaveError, Shift, ShiftKind, SHIFT_KINDS } from '../types';
 import { TimeField } from './TimeField';
-import { Banner, Button, colors, confirmAction, Segmented } from './ui';
+import { Banner, Button, colors, confirmAction, Segmented } from '../../../shared/ui';
 
 export type FormMode =
   | { type: 'create'; date: string; personId?: string }

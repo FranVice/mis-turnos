@@ -14,22 +14,22 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DayDetail } from '../components/DaySheet';
-import { MonthGrid } from '../components/MonthGrid';
-import { SchedulesEditor } from '../components/SchedulesEditor';
-import { FormMode, ShiftForm } from '../components/ShiftForm';
-import { Banner, Button, colors, ToastView, useToast } from '../components/ui';
-import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../shared/theme';
-import { useAppData } from '../data/AppData';
-import { MonthRef, monthOf, monthTitle, sameMonth, shiftMonth } from '../lib/dates';
-import type { Shift } from '../lib/types';
+import { DayDetail } from './components/DaySheet';
+import { MonthGrid } from './components/MonthGrid';
+import { SchedulesEditor } from './components/SchedulesEditor';
+import { FormMode, ShiftForm } from './components/ShiftForm';
+import { Banner, Button, colors, ToastView, useToast } from '../../shared/ui';
+import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../../shared/theme';
+import { useAppData } from './data/AppData';
+import { MonthRef, monthOf, monthTitle, sameMonth, shiftMonth } from '../../shared/lib/dates';
+import type { Shift } from './types';
 
 type Sheet =
   | { type: 'day'; date: string }
   | { type: 'form'; mode: FormMode; backToDay?: string }
   | { type: 'schedules' };
 
-export function CalendarScreen() {
+export function ShiftsScreen() {
   const data = useAppData();
   const { month, setMonth, today, people, me, isDemo, loading, loadError, refresh, signOut } = data;
   const toast = useToast();

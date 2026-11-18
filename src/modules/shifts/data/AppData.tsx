@@ -1,8 +1,8 @@
 import type { Session } from '@supabase/supabase-js';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
-import { MonthRef, monthOf, monthRange, todayISO } from '../lib/dates';
-import { isDemo, supabase } from '../lib/supabase';
+import { MonthRef, monthOf, monthRange, todayISO } from '../../../shared/lib/dates';
+import { isDemo, supabase } from '../../../shared/lib/supabase';
 import type {
   BulkResult,
   Person,
@@ -11,7 +11,7 @@ import type {
   ShiftInput,
   ShiftKind,
   UsualSchedule,
-} from '../lib/types';
+} from '../types';
 import { createDemoRepo, DEMO_USER_ID } from './demoRepo';
 import type { Repo } from './repo';
 import { createSupabaseRepo } from './supabaseRepo';

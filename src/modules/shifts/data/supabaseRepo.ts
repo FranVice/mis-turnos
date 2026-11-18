@@ -1,6 +1,6 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
-import { addDays, normalizeTime } from '../lib/dates';
-import type { Person, SaveError, SaveResult, Shift, UsualSchedule } from '../lib/types';
+import { addDays, normalizeTime } from '../../../shared/lib/dates';
+import type { Person, SaveError, SaveResult, Shift, UsualSchedule } from '../types';
 import type { Repo } from './repo';
 
 const SHIFT_COLUMNS = 'id, calendar_id, person_id, shift_date, kind, start_time, end_time, version, updated_by';

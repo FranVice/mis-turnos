@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { compactTime, endsNextDay, MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../lib/dates';
-import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../lib/types';
-import { colors, lighten, pressFeedback, radius, shadow, tint, webTransition, type InteractionState } from '../shared/theme';
+import { compactTime, endsNextDay, MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../../../shared/lib/dates';
+import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../types';
+import { colors, lighten, pressFeedback, radius, shadow, tint, webTransition, type InteractionState } from '../../../shared/theme';
 
 interface Props {
   month: MonthRef;

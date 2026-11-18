@@ -1,4 +1,4 @@
-import { kindColors } from '../shared/theme';
+import { kindColors } from '../../shared/theme';
 
 export type ShiftKind ='manana' | 'tarde' | 'noche' | 'libre' | 'vacaciones' | 'otro';
 

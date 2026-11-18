@@ -1,7 +1,7 @@
 // Modo demostración: datos ficticios en memoria. No se guarda nada en
 // Supabase y todo se pierde al cerrar la app.
-import { addDays, monthOf, monthRange, todayISO, weekdayIndex } from '../lib/dates';
-import type { Person, Shift, ShiftInput, UsualSchedule } from '../lib/types';
+import { addDays, monthOf, monthRange, todayISO, weekdayIndex } from '../../../shared/lib/dates';
+import type { Person, Shift, ShiftInput, UsualSchedule } from '../types';
 import type { Repo } from './repo';
 
 const CAL = 'demo-calendar';

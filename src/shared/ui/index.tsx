@@ -20,10 +20,10 @@ import {
   tint,
   webTransition,
   type InteractionState,
-} from '../shared/theme';
+} from '../theme';
 
 // Se reexportan para que los componentes existentes sigan importando desde aquí.
-export { colors, lighten, tint } from '../shared/theme';
+export { colors, lighten, tint } from '../theme';
 
 // ---------- Botón ----------
 

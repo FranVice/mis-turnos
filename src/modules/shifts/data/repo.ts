@@ -5,7 +5,7 @@ import type {
   Shift,
   ShiftInput,
   UsualSchedule,
-} from '../lib/types';
+} from '../types';
 
 // Interfaz común para Supabase y para el modo demostración.
 export interface Repo {

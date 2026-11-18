@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Banner, Button, colors } from '../components/ui';
-import { useAppData } from '../data/AppData';
+import { Banner, Button, colors } from '../ui';
+import { useAppData } from '../../modules/shifts/data/AppData';
 import { supabase } from '../lib/supabase';
 
 // Solo inicio de sesión: el registro público está desactivado y las

@@ -2,10 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
-import { addDays, endsNextDay, longDate } from '../lib/dates';
-import { isAllDay, KIND_COLOR, KIND_LABEL, Shift } from '../lib/types';
-import { Button, colors, tint } from './ui';
-import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../shared/theme';
+import { addDays, endsNextDay, longDate } from '../../../shared/lib/dates';
+import { isAllDay, KIND_COLOR, KIND_LABEL, Shift } from '../types';
+import { Button, colors, tint } from '../../../shared/ui';
+import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../../../shared/theme';
 
 // Detalle de un día: nombres completos, tipo y horas. Tocar un turno lo edita.
 export function DayDetail({
