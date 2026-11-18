@@ -61,8 +61,8 @@ export function LoginScreen() {
             <View style={[s.logoDot, { backgroundColor: '#2563EB' }]} />
             <View style={[s.logoDot, { backgroundColor: '#E8590C', marginLeft: -10 }]} />
           </View>
-          <Text style={s.title}>Mis Turnos</Text>
-          <Text style={s.subtitle}>{recovering ? 'Elige tu nueva contraseña.' : 'Vuestros horarios, en un mismo calendario privado.'}</Text>
+          <Text style={s.title}>Nexo</Text>
+          <Text style={s.subtitle}>{recovering ? 'Elige tu nueva contraseña.' : 'Vuestra organización familiar, en un solo lugar.'}</Text>
 
           <View style={s.form}>
             {!recovering ? <><Text style={s.label}>Correo</Text>
