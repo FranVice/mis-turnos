@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../../modules/shifts/data/AppData';
 import { EventsProvider } from '../../modules/calendar/data/EventsData';
+import { FinancesProvider } from '../../modules/finances/data/FinancesData';
 import { TasksProvider } from '../../modules/tasks/data/TasksData';
 import { LoginScreen } from '../../shared/auth/LoginScreen';
 import { MODULES } from '../../shared/navigation/modules';
@@ -27,6 +28,7 @@ export default function TabsLayout() {
   return (
     <TasksProvider>
     <EventsProvider>
+    <FinancesProvider>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -66,6 +68,7 @@ export default function TabsLayout() {
         />
       ))}
     </Tabs>
+    </FinancesProvider>
     </EventsProvider>
     </TasksProvider>
   );

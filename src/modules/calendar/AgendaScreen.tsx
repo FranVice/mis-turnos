@@ -91,7 +91,9 @@ export function AgendaScreen() {
         <View style={s.header}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.brand}>Nexo · Agenda</Text>
-            <Text style={s.title} accessibilityRole="header" numberOfLines={1}>{monthTitle(month)}</Text>
+            <Text style={s.title} accessibilityRole="header" numberOfLines={1}>
+              {monthTitle(month).replace(/\s*\d{4}$/, '')} <Text style={s.titleYear}>{monthTitle(month).slice(-4)}</Text>
+            </Text>
           </View>
           <View style={s.nav}>
             <NavBtn label="Mes anterior" icon="chevron-back" onPress={() => goMonth(-1)} />
@@ -270,6 +272,7 @@ const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingTop: 4 },
   brand: { fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 1.2, textTransform: 'uppercase' },
   title: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.6 },
+  titleYear: { fontWeight: '500', color: colors.faint },
   nav: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, padding: 2 },
   navBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   todayBtn: { height: 36, paddingHorizontal: 12, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },

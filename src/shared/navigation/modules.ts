@@ -65,7 +65,7 @@ export const MODULES: NexoModule[] = [
     iconActive: 'wallet',
     accent: '#F2C94C',
     summary: 'Caja familiar, ingresos y gastos',
-    ready: false,
+    ready: true,
     phase1: ['Caja familiar única', 'Ingresos fijos y extras', 'Gastos fijos y variables', 'Previsto frente a realizado', 'Saldo y previsión del mes'],
   },
   {
