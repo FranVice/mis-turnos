@@ -1,6 +1,1 @@
-import React from 'react';
-import { ComingSoon } from '../../shared/layout/ComingSoon';
-
-export default function Screen() {
-  return <ComingSoon moduleKey="agenda" />;
-}
+export { AgendaScreen as default } from '../../modules/calendar/AgendaScreen';

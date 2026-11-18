@@ -1,6 +1,4 @@
-// Resultado de guardar: el servidor confirma o devuelve un error legible.
-export type SaveError = { type: 'network' | 'other'; message: string };
-export type SaveResult<T> = { ok: true; value: T } | { ok: false; error: SaveError };
+export type { SaveError, SaveResult } from '../../shared/lib/result';
 
 export interface Task {
   id: string;

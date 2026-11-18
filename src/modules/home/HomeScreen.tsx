@@ -9,7 +9,9 @@ import { colors, lighten, pressFeedback, radius, tint, webTransition, type Inter
 import { Banner } from '../../shared/ui';
 import { useAppData } from '../shifts/data/AppData';
 import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../shifts/types';
-import { TaskRow } from '../tasks/components/TaskRow';
+import { useEvents } from '../calendar/data/EventsData';
+import { eventTime, TYPE_COLOR } from '../calendar/items';
+import { dueLabel, TaskRow } from '../tasks/components/TaskRow';
 import { useTasks } from '../tasks/data/TasksData';
 import { topPending } from '../tasks/logic';
 
@@ -36,6 +38,8 @@ export function HomeScreen() {
   const { tasks, refresh: refreshTasks } = useTasks();
   const pendingTasks = useMemo(() => tasks.filter((t) => !t.doneAt), [tasks]);
   const topTasks = useMemo(() => topPending(tasks, today, 3), [tasks, today]);
+  const { upcoming, refresh: refreshEvents } = useEvents();
+  const nextEvents = useMemo(() => upcoming.filter((e) => e.date <= addDays(today, LOOKAHEAD_DAYS - 1)).slice(0, 3), [upcoming, today]);
 
   const load = useCallback(async () => {
     try {
@@ -73,7 +77,7 @@ export function HomeScreen() {
 
   const onPull = async () => {
     setPulling(true);
-    await Promise.all([load(), refreshTasks()]);
+    await Promise.all([load(), refreshTasks(), refreshEvents()]);
     setPulling(false);
   };
 
@@ -133,6 +137,32 @@ export function HomeScreen() {
                 </View>
               ))}
             </View>
+          </View>
+        ) : null}
+
+        {/* Próximas citas: solo si hay alguna en las próximas dos semanas */}
+        {nextEvents.length > 0 ? (
+          <View style={s.card}>
+            <Pressable onPress={() => router.navigate('/agenda')} accessibilityRole="button" accessibilityLabel="Próximas citas. Abrir Agenda" style={s.cardHead}>
+              <Text style={s.cardTitle}>Próximas citas</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+            </Pressable>
+            {nextEvents.map((e) => {
+              const who = e.personId ? people.find((p) => p.id === e.personId)?.name : 'Familia';
+              return (
+                <Pressable key={e.id} onPress={() => router.navigate('/agenda')} accessibilityRole="button" style={s.eventRow}>
+                  <View style={[s.eventBar, { backgroundColor: TYPE_COLOR.event }]} />
+                  <View style={s.eventWhen}>
+                    <Text style={s.eventDay}>{dueLabel(e.date, today)}</Text>
+                    <Text style={s.eventTime}>{eventTime(e)}</Text>
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={s.eventTitle} numberOfLines={1}>{e.title}</Text>
+                    <Text style={s.eventWho} numberOfLines={1}>{[who, e.location].filter(Boolean).join(' · ')}</Text>
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
         ) : null}
 
@@ -220,6 +250,13 @@ const s = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
   cardCount: { fontSize: 14, fontWeight: '600', color: colors.muted },
   taskList: { marginHorizontal: -14, marginBottom: -14 },
+  eventRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40 },
+  eventBar: { width: 4, alignSelf: 'stretch', borderRadius: 2 },
+  eventWhen: { width: 78 },
+  eventDay: { fontSize: 13, fontWeight: '800', color: colors.text },
+  eventTime: { fontSize: 12, color: colors.muted },
+  eventTitle: { fontSize: 15, fontWeight: '600', color: colors.text },
+  eventWho: { fontSize: 13, color: colors.muted },
   personRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 34 },
   avatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },

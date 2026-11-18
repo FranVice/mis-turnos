@@ -40,9 +40,10 @@ export const MODULES: NexoModule[] = [
     title: 'Agenda',
     icon: 'calendar-outline',
     iconActive: 'calendar',
-    accent: '#E879A8',
-    summary: 'Citas personales y familiares',
-    ready: false,
+    // Violeta: el rosa coincidía con el turno de tarde en el calendario unificado.
+    accent: '#C084FC',
+    summary: 'Citas y calendario común',
+    ready: true,
     phase1: ['Citas personales y familiares', 'Calendario mensual compartido', 'Agenda desplegable por día', 'Citas próximas en Inicio'],
   },
   {

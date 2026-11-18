@@ -4,7 +4,7 @@ import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
 import { endsNextDay, isValidTime, longDate, shortDate } from '../../../shared/lib/dates';
 import { isAllDay, KIND_COLOR, KIND_LABEL,SaveError, Shift, ShiftKind, SHIFT_KINDS } from '../types';
-import { TimeField } from './TimeField';
+import { TimeField } from '../../../shared/ui/TimeField';
 import { Banner, Button, colors, confirmAction, Segmented } from '../../../shared/ui';
 
 export type FormMode =

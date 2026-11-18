@@ -1,8 +1,8 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { dateToTime, timeToDate } from '../../../shared/lib/dates';
-import { colors } from '../../../shared/ui';
+import { dateToTime, timeToDate } from '../lib/dates';
+import { colors } from './index';
 
 // Campo de hora en formato 24 h. En iPhone usa el selector nativo compacto;
 // en web (solo para revisar la interfaz) un campo de texto HH:MM.

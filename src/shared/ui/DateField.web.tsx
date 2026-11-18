@@ -22,7 +22,7 @@ export function DateField({ label, value, onChange }: { label: string; value: st
         padding: '6px 10px',
         colorScheme: 'dark',
         boxSizing: 'border-box',
-        fontFamily: 'inherit',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       }}
     />
   );

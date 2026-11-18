@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
 import { isValidTime } from '../../../shared/lib/dates';
 import { KIND_LABEL, Person, ShiftKind, TIMED_KINDS } from '../types';
-import { TimeField } from './TimeField';
+import { TimeField } from '../../../shared/ui/TimeField';
 import { Banner, Button, colors, confirmAction, useToast } from '../../../shared/ui';
 
 // «Horarios habituales»: horas por persona para rellenar el formulario.
