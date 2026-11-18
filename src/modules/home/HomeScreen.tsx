@@ -9,6 +9,9 @@ import { colors, lighten, pressFeedback, radius, tint, webTransition, type Inter
 import { Banner } from '../../shared/ui';
 import { useAppData } from '../shifts/data/AppData';
 import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../shifts/types';
+import { TaskRow } from '../tasks/components/TaskRow';
+import { useTasks } from '../tasks/data/TasksData';
+import { topPending } from '../tasks/logic';
 
 // Días que mira Inicio hacia delante para buscar libres en común.
 const LOOKAHEAD_DAYS = 14;
@@ -30,6 +33,9 @@ export function HomeScreen() {
   const [range, setRange] = useState<Shift[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pulling, setPulling] = useState(false);
+  const { tasks, refresh: refreshTasks } = useTasks();
+  const pendingTasks = useMemo(() => tasks.filter((t) => !t.doneAt), [tasks]);
+  const topTasks = useMemo(() => topPending(tasks, today, 3), [tasks, today]);
 
   const load = useCallback(async () => {
     try {
@@ -67,7 +73,7 @@ export function HomeScreen() {
 
   const onPull = async () => {
     setPulling(true);
-    await load();
+    await Promise.all([load(), refreshTasks()]);
     setPulling(false);
   };
 
@@ -125,6 +131,28 @@ export function HomeScreen() {
                     {d === today ? 'Hoy' : d === addDays(today, 1) ? 'Mañana' : `${WEEKDAYS_SHORT_NAMES[weekdayIndex(d)]} ${shortDate(d)}`}
                   </Text>
                 </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {/* Tareas: solo si hay pendientes */}
+        {pendingTasks.length > 0 ? (
+          <View style={s.card}>
+            <Pressable
+              onPress={() => router.navigate('/tareas')}
+              accessibilityRole="button"
+              accessibilityLabel={`Tareas pendientes: ${pendingTasks.length}. Abrir Tareas`}
+              style={s.cardHead}
+            >
+              <Text style={s.cardTitle}>
+                Tareas <Text style={s.cardCount}>· {pendingTasks.length} {pendingTasks.length === 1 ? 'pendiente' : 'pendientes'}</Text>
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+            </Pressable>
+            <View style={s.taskList}>
+              {topTasks.map((t, i) => (
+                <TaskRow key={t.id} task={t} today={today} first={i === 0} compact onOpen={() => router.navigate('/tareas')} />
               ))}
             </View>
           </View>
@@ -190,6 +218,8 @@ const s = StyleSheet.create({
   card: { backgroundColor: colors.card, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.line, padding: 14, gap: 10 },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
+  cardCount: { fontSize: 14, fontWeight: '600', color: colors.muted },
+  taskList: { marginHorizontal: -14, marginBottom: -14 },
   personRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 34 },
   avatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },

@@ -4,6 +4,7 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppData } from '../../modules/shifts/data/AppData';
+import { TasksProvider } from '../../modules/tasks/data/TasksData';
 import { LoginScreen } from '../../shared/auth/LoginScreen';
 import { MODULES } from '../../shared/navigation/modules';
 import { colors } from '../../shared/theme';
@@ -23,6 +24,7 @@ export default function TabsLayout() {
   if (!signedIn || recovering) return <LoginScreen />;
 
   return (
+    <TasksProvider>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -62,6 +64,7 @@ export default function TabsLayout() {
         />
       ))}
     </Tabs>
+    </TasksProvider>
   );
 }
 

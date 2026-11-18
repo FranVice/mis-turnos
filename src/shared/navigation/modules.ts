@@ -53,7 +53,7 @@ export const MODULES: NexoModule[] = [
     iconActive: 'checkbox',
     accent: '#4CC38A',
     summary: 'Pendientes y recordatorios',
-    ready: false,
+    ready: true,
     phase1: ['Crear tareas en segundos', 'Asignar a Franklin, Almudena o ambos', 'Fecha de vencimiento opcional', 'Pendientes importantes en Inicio'],
   },
   {

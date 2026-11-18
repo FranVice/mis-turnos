@@ -93,10 +93,13 @@ export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  minItemWidth,
 }: {
   options: SegmentOption<T>[];
   value: T | null;
   onChange: (v: T) => void;
+  /** Ancho mínimo de cada opción (por defecto 85; menos para que quepan 4 en un iPhone). */
+  minItemWidth?: number;
 }) {
   return (
     <View style={styles.segmented}>
@@ -111,6 +114,7 @@ export function Segmented<T extends string>({
             onPress={() => onChange(o.value)}
             style={(state: InteractionState) => [
               styles.segment,
+              minItemWidth !== undefined && { minWidth: minItemWidth },
               webTransition,
               pressFeedback(state, colors.elevated),
               active && { backgroundColor: tint(accent, 0.2), borderColor: accent },
