@@ -124,7 +124,7 @@ export function ShiftsScreen() {
       {/* Cabecera compacta: mes, navegación y acciones en dos filas bajas. */}
       <View style={s.topRow}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.appName}>Mis Turnos</Text>
+          <Text style={s.appName}>Nexo · Turnos</Text>
           <Text style={s.monthTitle} accessibilityRole="header" numberOfLines={1}>
             {monthName(month)} <Text style={s.monthYear}>{month.year}</Text>
           </Text>
@@ -206,7 +206,7 @@ export function ShiftsScreen() {
       </ScrollView>
 
       {/* Barra inferior */}
-      <View style={[s.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[s.bottomBar, { paddingBottom: 12 }]}>
         {selecting ? (
           <>
             <Text style={s.selCount}>
@@ -244,7 +244,7 @@ export function ShiftsScreen() {
         )}
       </View>
 
-      <ToastView bottom={110 + insets.bottom} />
+      <ToastView bottom={110} />
 
       {/* Hoja con el detalle del día, el formulario o los horarios */}
       <Modal

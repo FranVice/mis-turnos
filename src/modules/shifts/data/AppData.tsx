@@ -42,6 +42,8 @@ interface AppDataValue {
   loading: boolean;
   loadError: string | null;
   refresh: () => Promise<void>;
+  /** Consulta de solo lectura de un rango de fechas (p. ej. para Inicio), independiente del mes abierto. */
+  loadShiftsRange: (from: string, to: string) => Promise<Shift[]>;
   // Acciones (confirman cuando el servidor lo ha registrado)
   createShift: (date: string, input: ShiftInput) => Promise<SaveResult<Shift>>;
   createShifts: (dates: string[], input: ShiftInput) => Promise<SaveResult<BulkResult>>;
@@ -209,6 +211,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     return () => { clearInterval(timer); window.removeEventListener('focus', reload); window.removeEventListener('online', reload); window.removeEventListener('online', connection); window.removeEventListener('offline', connection); document.removeEventListener('visibilitychange', visible); };
   }, [signedIn, refresh]);
 
+  const loadShiftsRange = useCallback(async (from: string, to: string) => {
+    if (!signedIn || (!isDemo && !userId)) return [];
+    const list = await repo.loadShifts(from, to);
+    return list.filter((s) => s.date >= from && s.date <= to);
+  }, [signedIn, userId]);
+
   // ---------- Derivados ----------
   const personById = useCallback((id: string | null | undefined) => people.find((p) => p.id === id), [people]);
   const personByUser = useCallback(
@@ -319,6 +327,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     loading,
     loadError,
     refresh,
+    loadShiftsRange,
     createShift,
     createShifts,
     updateShift,
