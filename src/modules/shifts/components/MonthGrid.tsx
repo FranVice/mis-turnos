@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { compactTime, endsNextDay, MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../../../shared/lib/dates';
-import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../types';
+import { MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../../../shared/lib/dates';
+import { isAllDay, KIND_COLOR, KIND_LABEL, KIND_LETTER, type Person, type Shift } from '../types';
 import { colors, lighten, pressFeedback, radius, shadow, tint, webTransition, type InteractionState } from '../../../shared/theme';
 
 interface Props {
@@ -119,17 +119,13 @@ const DayCell = memo(function DayCell({
         return (
           <View key={sh.id} style={[s.pill, { backgroundColor: tint(kindColor, 0.15), borderLeftColor: personColor }]}>
             <Text style={[s.pillInitial, { color: personColor }]}>{p?.initial ?? '?'}</Text>
-            {/* Entrada arriba y salida abajo: así caben las horas en el ancho del iPhone. */}
+            {/* Turnos con horario: solo la letra (M, T, N); las horas se ven al tocar el día. */}
             <View style={s.pillTimes}>
-              {isAllDay(sh.kind) ? <Text style={[s.pillAllDay, { color: kindColor }]} numberOfLines={1}>{sh.kind === 'vacaciones' ? 'Vacac.' : KIND_LABEL[sh.kind]}</Text> : <>
-              <Text style={[s.pillStart, { color: kindColor }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                {compactTime(sh.start)}
-              </Text>
-              <Text style={s.pillEnd} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                {compactTime(sh.end)}
-                {endsNextDay(sh.start, sh.end) ? <Text style={s.nextDay}>+1</Text> : null}
-              </Text>
-              </>}
+              {isAllDay(sh.kind) ? (
+                <Text style={[s.pillAllDay, { color: kindColor }]} numberOfLines={1}>{sh.kind === 'vacaciones' ? 'Vacac.' : KIND_LABEL[sh.kind]}</Text>
+              ) : (
+                <Text style={[s.pillLetter, { color: kindColor }]} numberOfLines={1}>{KIND_LETTER[sh.kind]}</Text>
+              )}
             </View>
           </View>
         );
@@ -177,7 +173,7 @@ const s = StyleSheet.create({
   checkMark: { color: colors.onPrimary, fontSize: 10, fontWeight: '900', lineHeight: 12 },
   pill: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderRadius: 5,
     borderLeftWidth: 3,
     paddingLeft: 2,
@@ -188,7 +184,5 @@ const s = StyleSheet.create({
   pillInitial: { fontSize: 10, fontWeight: '900', lineHeight: 15 },
   pillTimes: { flex: 1 },
   pillAllDay: { fontSize: 9, lineHeight: 15, fontWeight: '800' },
-  pillStart: { fontSize: 13, lineHeight: 15, fontWeight: '800', color: colors.text, letterSpacing: -0.4 },
-  pillEnd: { fontSize: 13, lineHeight: 15, fontWeight: '600', color: colors.muted, letterSpacing: -0.4 },
-  nextDay: { fontSize: 9, fontWeight: '800', color: colors.warnText },
+  pillLetter: { fontSize: 14, lineHeight: 15, fontWeight: '900' },
 });

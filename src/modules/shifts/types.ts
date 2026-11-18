@@ -15,6 +15,13 @@ export const KIND_LABEL: Record<ShiftKind, string> = {
   otro: 'Otro',
 };
 
+// Letra que se muestra en la celda del calendario mensual para los turnos con horario.
+export const KIND_LETTER: Partial<Record<ShiftKind, string>> = {
+  manana: 'M',
+  tarde: 'T',
+  noche: 'N',
+};
+
 // Cada tipo de turno tiene su color (definido en el tema compartido).
 export const KIND_COLOR: Record<ShiftKind, string> = kindColors;
 
