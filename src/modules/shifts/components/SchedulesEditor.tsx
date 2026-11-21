@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAppData } from '../data/AppData';
 import { isValidTime } from '../../../shared/lib/dates';
-import { KIND_LABEL, Person, ShiftKind, TIMED_KINDS } from '../types';
+import { KIND_COLOR, KIND_LABEL, kindsFor, Person, ShiftKind, ShiftTemplate, TIMED_KINDS } from '../types';
 import { TimeField } from '../../../shared/ui/TimeField';
 import { Banner, Button, colors, confirmAction, useToast } from '../../../shared/ui';
 
@@ -23,9 +23,10 @@ export function SchedulesEditor({ onSignOut, footerInset }: { onSignOut?: () => 
             <Text style={s.personName}>{p.name}</Text>
           </View>
           <ColorPicker person={p} />
-          {TIMED_KINDS.map((k) => (
+          {TIMED_KINDS.filter((k) => kindsFor(p).includes(k)).map((k) => (
             <ScheduleRow key={k + (scheduleFor(p.id, k)?.start ?? '') + (scheduleFor(p.id, k)?.end ?? '')} person={p} kind={k} />
           ))}
+          {p.id === me?.id ? <TemplatesList person={p} /> : null}
         </View>
       ))}
 
@@ -38,6 +39,42 @@ export function SchedulesEditor({ onSignOut, footerInset }: { onSignOut?: () => 
         </View>
       ) : null}
     </ScrollView>
+  );
+}
+
+// Turnos con nombre propios: se crean desde el formulario del turno y aquí se pueden borrar.
+function TemplatesList({ person }: { person: Person }) {
+  const { templatesFor, deleteTemplate } = useAppData();
+  const toast = useToast();
+  const [busy, setBusy] = useState<string | null>(null);
+  const templates = templatesFor(person.id);
+
+  async function remove(t: ShiftTemplate) {
+    if (!(await confirmAction('Borrar turno con nombre', `¿Borrar «${t.name}»? Los turnos ya guardados con ese nombre no cambian.`, 'Borrar'))) return;
+    setBusy(t.id);
+    const r = await deleteTemplate(t.id);
+    setBusy(null);
+    toast(r.ok ? `«${t.name}» borrado` : 'No se pudo borrar. Vuelve a intentarlo.');
+  }
+
+  return (
+    <View style={s.row}>
+      <Text style={s.kind}>Mis turnos con nombre</Text>
+      {templates.length === 0 ? (
+        <Text style={s.unset}>Ninguno todavía. Créalos al añadir un turno con «Guardar como turno con nombre».</Text>
+      ) : (
+        templates.map((t) => (
+          <View key={t.id} style={s.templateRow}>
+            <View style={[s.templateDot, { backgroundColor: KIND_COLOR[t.kind] }]} />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={s.templateName} numberOfLines={1}>{t.name}</Text>
+              <Text style={s.templateMeta}>{KIND_LABEL[t.kind]} · {t.start}–{t.end}</Text>
+            </View>
+            <Button title="Borrar" variant="ghost" onPress={() => remove(t)} loading={busy === t.id} style={s.smallBtn} />
+          </View>
+        ))
+      )}
+    </View>
   );
 }
 
@@ -116,6 +153,10 @@ const s = StyleSheet.create({
   times: { flexDirection: 'row', gap: 10 },
   actions: { flexDirection: 'row', gap: 8 },
   smallBtn: { minHeight: 44 },
+  templateRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  templateDot: { width: 10, height: 10, borderRadius: 5 },
+  templateName: { fontSize: 16, fontWeight: '700', color: colors.text },
+  templateMeta: { fontSize: 13, color: colors.muted, fontVariant: ['tabular-nums'] },
   account: { gap: 10, marginTop: 8 },
   accountText: { fontSize: 15, color: colors.muted, textAlign: 'center' },
 });

@@ -4,6 +4,8 @@ import type {
   SaveResult,
   Shift,
   ShiftInput,
+  ShiftTemplate,
+  ShiftTemplateInput,
   UsualSchedule,
 } from '../types';
 
@@ -19,6 +21,9 @@ export interface Repo {
   deleteShift(shift: Shift): Promise<SaveResult<null>>;
   saveSchedule(schedule: UsualSchedule): Promise<SaveResult<UsualSchedule>>;
   deleteSchedule(personId: string, kind: UsualSchedule['kind']): Promise<SaveResult<null>>;
+  loadTemplates(): Promise<ShiftTemplate[]>;
+  createTemplate(input: ShiftTemplateInput): Promise<SaveResult<ShiftTemplate>>;
+  deleteTemplate(id: string): Promise<SaveResult<null>>;
   /** Avisa de cambios hechos desde el otro móvil. Devuelve la función para cancelar. */
   subscribe(onChange: () => void): () => void;
 }

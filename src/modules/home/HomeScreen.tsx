@@ -8,7 +8,7 @@ import { MODULES } from '../../shared/navigation/modules';
 import { colors, lighten, pressFeedback, radius, tint, webTransition, type InteractionState } from '../../shared/theme';
 import { Banner } from '../../shared/ui';
 import { useAppData } from '../shifts/data/AppData';
-import { isAllDay, KIND_COLOR, KIND_LABEL, type Person, type Shift } from '../shifts/types';
+import { isAllDay, KIND_COLOR, shiftTitle, type Person, type Shift } from '../shifts/types';
 import { useEvents } from '../calendar/data/EventsData';
 import { eventTime, TYPE_COLOR } from '../calendar/items';
 import { dueLabel, TaskRow } from '../tasks/components/TaskRow';
@@ -226,7 +226,7 @@ function PersonToday({ person, shift, isMe }: { person: Person; shift?: Shift; i
         <View style={[s.kindPill, { backgroundColor: tint(KIND_COLOR[shift.kind], 0.18) }]}>
           <View style={[s.kindDot, { backgroundColor: KIND_COLOR[shift.kind] }]} />
           <Text style={[s.kindText, { color: lighten(KIND_COLOR[shift.kind], 0.2) }]}>
-            {KIND_LABEL[shift.kind]}
+            {shiftTitle(shift)}
             {!isAllDay(shift.kind) ? ` · ${compactRange(shift.start, shift.end)}` : ''}
           </Text>
         </View>

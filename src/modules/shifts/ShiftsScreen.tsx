@@ -15,11 +15,12 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DayDetail } from './components/DaySheet';
+import { calendarButtons, calendarPalette } from './calendarPalette';
 import { MonthGrid } from './components/MonthGrid';
 import { SchedulesEditor } from './components/SchedulesEditor';
 import { FormMode, ShiftForm } from './components/ShiftForm';
 import { Banner, Button, colors, ToastView, useToast } from '../../shared/ui';
-import { pressFeedback, radius, shadow, webTransition, type InteractionState } from '../../shared/theme';
+import { lighten, pressFeedback, radius, tint, webTransition, type InteractionState } from '../../shared/theme';
 import { useAppData } from './data/AppData';
 import { MonthRef, monthOf, monthTitle, sameMonth, shiftMonth } from '../../shared/lib/dates';
 import type { Shift } from './types';
@@ -112,6 +113,7 @@ export function ShiftsScreen() {
   };
 
   const sortedSelected = [...selected].sort();
+  const lightSheet = sheet?.type === 'day' || sheet?.type === 'form';
 
   return (
     <SafeAreaView style={s.safe} edges={['top', 'left', 'right']}>
@@ -123,8 +125,16 @@ export function ShiftsScreen() {
 
       {/* Cabecera compacta: mes, navegación y acciones en dos filas bajas. */}
       <View style={s.topRow}>
+        <View style={s.clockBackdrop} accessible={false}>
+          <View style={s.clockFace}>
+            <View style={s.clockTrack} />
+            <View style={s.clockMinute} />
+            <View style={s.clockHour} />
+            <View style={s.clockPivot} />
+          </View>
+        </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.appName}>Nexo · Turnos</Text>
+          <Text style={s.appName}>Mis turnos</Text>
           <Text style={s.monthTitle} accessibilityRole="header" numberOfLines={1}>
             {monthName(month)} <Text style={s.monthYear}>{month.year}</Text>
           </Text>
@@ -147,9 +157,13 @@ export function ShiftsScreen() {
             disabled={isCurrentMonth}
             accessibilityRole="button"
             accessibilityLabel="Volver a hoy"
-            style={(state: InteractionState) => [s.todayBtn, webTransition, pressFeedback(state, colors.elevated), isCurrentMonth && { opacity: 0.4 }]}
+            style={(state: InteractionState) => [
+              s.todayBtn,
+              webTransition,
+              isCurrentMonth ? s.todayCurrent : pressFeedback(state, calendarPalette.panelHover),
+            ]}
           >
-            <Text style={s.todayBtnText}>Hoy</Text>
+            <Text style={[s.todayBtnText, isCurrentMonth && s.todayCurrentText]}>Hoy</Text>
           </Pressable>
           <IconButton label="Mes siguiente" onPress={() => goMonth(1)} compact>
             <Ionicons name="chevron-forward" size={20} color={colors.text} />
@@ -158,8 +172,8 @@ export function ShiftsScreen() {
         <View style={s.legend}>
           {people.map((p) => (
             <View key={p.id} style={s.legendItem}>
-              <View style={[s.legendSwatch, { backgroundColor: p.color }]}>
-                <Text style={s.legendInitial}>{p.initial}</Text>
+              <View style={[s.legendSwatch, { backgroundColor: tint(p.color, 0.28) }]}>
+                <Text style={[s.legendInitial, { color: lighten(p.color, 0.45) }]}>{p.initial}</Text>
               </View>
               <Text style={[s.legendName, p.id === me?.id && { color: colors.text }]} numberOfLines={1}>
                 {p.name}
@@ -171,8 +185,11 @@ export function ShiftsScreen() {
       </View>
 
       <ScrollView
+        style={s.scrollFrame}
         contentContainerStyle={s.scroll}
-        refreshControl={<RefreshControl refreshing={pullRefreshing} onRefresh={onPullRefresh} tintColor={colors.muted} />}
+        indicatorStyle="black"
+        persistentScrollbar
+        refreshControl={<RefreshControl refreshing={pullRefreshing} onRefresh={onPullRefresh} tintColor={calendarPalette.onToday} />}
       >
         {!data.online ? <Banner kind="warn">Sin conexión. Conservamos los últimos datos confirmados; necesitas internet para guardar.</Banner> : null}
         {loadError ? (
@@ -213,9 +230,10 @@ export function ShiftsScreen() {
               {selected.size === 0 ? 'Toca los días' : `${selected.size} ${selected.size === 1 ? 'día' : 'días'}`}
             </Text>
             <View style={s.bottomActions}>
-              <Button title="Cancelar" variant="secondary" onPress={exitSelecting} style={{ flex: 1 }} />
+              <Button title="Cancelar" palette={calendarButtons.secondary} onPress={exitSelecting} style={{ flex: 1 }} />
               <Button
                 title="Asignar turno"
+                palette={calendarButtons.primary}
                 onPress={() => setSheet({ type: 'form', mode: { type: 'bulk', dates: sortedSelected } })}
                 disabled={selected.size === 0}
                 style={{ flex: 1.4 }}
@@ -226,18 +244,19 @@ export function ShiftsScreen() {
           <View style={s.bottomActions}>
             <Button
               title="Varios días"
-              variant="secondary"
+              palette={calendarButtons.secondary}
               onPress={() => setSelecting(true)}
-              icon={<Ionicons name="checkmark-done" size={20} color={colors.text} />}
+              icon={<Ionicons name="checkmark-done" size={20} color={calendarButtons.secondary.fg} />}
               style={{ flex: 1 }}
             />
             <Button
               title="Turno hoy"
+              palette={calendarButtons.primary}
               onPress={() => {
                 setMonth(monthOf(today));
                 setSheet({ type: 'day', date: today });
               }}
-              icon={<Ionicons name="today-outline" size={20} color={colors.onPrimary} />}
+              icon={<Ionicons name="today-outline" size={20} color={calendarButtons.primary.fg} />}
               style={{ flex: 1 }}
             />
           </View>
@@ -254,18 +273,18 @@ export function ShiftsScreen() {
         onRequestClose={closeSheet}
         transparent={false}
       >
-        <View style={[s.sheet, Platform.OS === 'web' && { paddingTop: insets.top }]}>
+        <View style={[s.sheet, lightSheet && s.lightSheet, Platform.OS === 'web' && { paddingTop: insets.top }]}>
           <View style={s.sheetBar}>
             {sheet?.type === 'form' && sheet.backToDay ? (
               <Pressable onPress={() => setSheet({ type: 'day', date: sheet.backToDay! })} hitSlop={10} style={s.sheetBack}>
                 <Ionicons name="chevron-back" size={22} color={colors.text} />
-                <Text style={s.sheetBarText}>Día</Text>
+                <Text style={[s.sheetBarText, lightSheet && s.lightSheetBarText]}>Día</Text>
               </Pressable>
             ) : (
               <View />
             )}
             <Pressable onPress={closeSheet} hitSlop={10} style={{ minHeight: 44, justifyContent: 'center' }} accessibilityLabel="Cerrar">
-              <Text style={[s.sheetBarText, { fontWeight: '700' }]}>Cerrar</Text>
+              <Text style={[s.sheetBarText, lightSheet && s.lightSheetBarText, { fontWeight: '700' }]}>Cerrar</Text>
             </Pressable>
           </View>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -273,7 +292,7 @@ export function ShiftsScreen() {
               <DayDetail
                 date={sheet.date}
                 footerInset={insets.bottom}
-                onAdd={() => setSheet({ type: 'form', mode: { type: 'create', date: sheet.date }, backToDay: sheet.date })}
+                onAdd={(date) => setSheet({ type: 'form', mode: { type: 'create', date }, backToDay: date })}
                 onEdit={(shift) => openEdit(shift, sheet.date)}
               />
             ) : null}
@@ -330,7 +349,7 @@ function IconButton({
       style={(state: InteractionState) => [
         compact ? s.iconBtnCompact : s.iconBtn,
         webTransition,
-        pressFeedback(state, colors.elevated),
+        pressFeedback(state, calendarPalette.panelHover),
       ]}
     >
       {children}
@@ -339,69 +358,88 @@ function IconButton({
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: calendarPalette.panel },
   demo: { backgroundColor: colors.warnBg, paddingVertical: 6, paddingHorizontal: 12 },
   demoText: { fontSize: 12, fontWeight: '800', color: colors.warnText, textAlign: 'center', letterSpacing: 0.3 },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingTop: 4 },
-  appName: { fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 1.2, textTransform: 'uppercase' },
-  monthTitle: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.6 },
-  monthYear: { fontWeight: '500', color: colors.faint },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingTop: 4, backgroundColor: calendarPalette.panel },
+  clockBackdrop: { ...StyleSheet.absoluteFill, overflow: 'hidden', pointerEvents: 'none' },
+  clockFace: {
+    position: 'absolute',
+    width: 124,
+    height: 124,
+    right: 76,
+    top: -32,
+    borderRadius: 62,
+    borderWidth: 1,
+    borderColor: tint(calendarPalette.today, 0.23),
+    backgroundColor: tint(calendarPalette.today, 0.05),
+  },
+  clockTrack: { position: 'absolute', top: 10, right: 10, bottom: 10, left: 10, borderRadius: 52, borderWidth: 1, borderColor: tint(calendarPalette.today, 0.15) },
+  clockMinute: { position: 'absolute', height: 32, width: 1.5, bottom: 61, left: 60, backgroundColor: tint(calendarPalette.today, 0.40) },
+  clockHour: { position: 'absolute', height: 1.5, width: 23, left: 61, top: 60, backgroundColor: tint(calendarPalette.today, 0.40) },
+  clockPivot: { position: 'absolute', height: 5, width: 5, top: 58, left: 58, borderRadius: 3, backgroundColor: tint(calendarPalette.today, 0.65) },
+  appName: { fontSize: 11, lineHeight: 14, fontWeight: '800', color: calendarPalette.today, letterSpacing: 1.4, textTransform: 'uppercase' },
+  monthTitle: { fontSize: 26, lineHeight: 31, fontWeight: '800', color: colors.text, letterSpacing: -0.8 },
+  monthYear: { fontSize: 17, fontWeight: '600', color: calendarPalette.panelMuted, letterSpacing: 0, fontVariant: ['tabular-nums'] },
   iconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    backgroundColor: calendarPalette.panelControl,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: calendarPalette.panelBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBtnCompact: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  iconBtnCompact: { width: 36, height: 36, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
   navRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 6,
+    paddingHorizontal: 12,
+    paddingTop: 4,
+    paddingBottom: 4,
+    backgroundColor: calendarPalette.panel,
   },
   navGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: calendarPalette.panelControl,
     borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.pill,
-    padding: 2,
+    borderColor: calendarPalette.panelBorder,
+    borderRadius: radius.md,
   },
-  todayBtn: { height: 36, paddingHorizontal: 14, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  todayBtnText: { color: colors.primary, fontWeight: '800', fontSize: 15 },
-  legend: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
-  legendSwatch: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  legendInitial: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
-  legendName: { fontSize: 14, fontWeight: '600', color: colors.muted, flexShrink: 1 },
+  todayBtn: { height: 36, paddingHorizontal: 11, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: tint(calendarPalette.today, 0.12) },
+  todayCurrent: { backgroundColor: 'transparent' },
+  todayBtnText: { color: calendarPalette.today, fontWeight: '800', fontSize: 14 },
+  todayCurrentText: { color: calendarPalette.panelMuted },
+  legend: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1, minWidth: 0 },
+  legendSwatch: { width: 22, height: 22, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  legendInitial: { fontWeight: '900', fontSize: 12 },
+  legendName: { fontSize: 13, fontWeight: '600', color: calendarPalette.panelMuted, flexShrink: 1 },
+  scrollFrame: { backgroundColor: calendarPalette.background },
   scroll: { paddingHorizontal: 3, paddingBottom: 16, gap: 8 },
-  tip: { textAlign: 'center', fontSize: 13, color: colors.faint, marginTop: 4 },
+  tip: { textAlign: 'center', fontSize: 13, color: calendarPalette.muted, marginTop: 4 },
   bottomBar: {
     paddingHorizontal: 12,
     paddingTop: 10,
     gap: 8,
-    backgroundColor: colors.surface,
+    backgroundColor: calendarPalette.background,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.line,
-    ...shadow.raised,
+    borderTopColor: calendarPalette.border,
   },
   bottomActions: { flexDirection: 'row', gap: 10 },
-  selCount: { fontSize: 15, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  selCount: { fontSize: 15, fontWeight: '700', color: calendarPalette.ink, textAlign: 'center' },
   sheet: {
     flex: 1,
     backgroundColor: colors.surface,
     // En web (PWA) se limita al ancho de un iPhone.
     ...(Platform.OS === 'web' ? { width: '100%' as const, maxWidth: 760, alignSelf: 'center' as const } : null),
   },
+  lightSheet: { backgroundColor: calendarPalette.panel },
   sheetBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -413,4 +451,5 @@ const s = StyleSheet.create({
   },
   sheetBack: { flexDirection: 'row', alignItems: 'center' },
   sheetBarText: { fontSize: 17, color: colors.primary },
+  lightSheetBarText: { color: calendarPalette.today },
 });

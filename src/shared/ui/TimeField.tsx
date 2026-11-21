@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { dateToTime, timeToDate } from '../lib/dates';
 import { colors } from './index';
+import type { TimeFieldPalette, TimeFieldProps } from './TimeField.types';
 
 // Campo de hora en formato 24 h. En iPhone usa el selector nativo compacto;
 // en web (solo para revisar la interfaz) un campo de texto HH:MM.
@@ -11,16 +12,11 @@ export function TimeField({
   value,
   onChange,
   suggested = '08:00',
-}: {
-  label: string;
-  value: string | null;
-  onChange: (v: string | null) => void;
-  /** Hora con la que se abre el selector si el campo está vacío. */
-  suggested?: string;
-}) {
+  lightPalette,
+}: TimeFieldProps) {
   return (
-    <View style={s.wrap}>
-      <Text style={s.label}>{label}</Text>
+    <View style={[s.wrap, lightPalette && { backgroundColor: lightPalette.cell, borderColor: lightPalette.border }]}>
+      <Text style={[s.label, lightPalette && { color: lightPalette.muted }]}>{label}</Text>
       {Platform.OS === 'ios' ? (
         value ? (
           <DateTimePicker
@@ -30,16 +26,16 @@ export function TimeField({
             // En iOS el formato 24 h lo da la configuración regional.
             locale="es-ES"
             onValueChange={(_e, d) => onChange(dateToTime(d))}
-            themeVariant="dark"
+            themeVariant={lightPalette ? 'light' : 'dark'}
             style={s.iosPicker}
           />
         ) : (
-          <Pressable style={s.empty} onPress={() => onChange(suggested)}>
-            <Text style={s.emptyText}>Elegir</Text>
+          <Pressable style={[s.empty, lightPalette && { backgroundColor: lightPalette.cell, borderColor: lightPalette.border }]} onPress={() => onChange(suggested)}>
+            <Text style={[s.emptyText, lightPalette && { color: lightPalette.muted }]}>Elegir</Text>
           </Pressable>
         )
       ) : (
-        <AndroidTime value={value} onChange={onChange} suggested={suggested} />
+        <AndroidTime value={value} onChange={onChange} suggested={suggested} lightPalette={lightPalette} />
       )}
     </View>
   );
@@ -49,16 +45,18 @@ function AndroidTime({
   value,
   onChange,
   suggested,
+  lightPalette,
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
   suggested: string;
+  lightPalette?: TimeFieldPalette;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Pressable style={s.empty} onPress={() => setOpen(true)}>
-        <Text style={value ? s.valueText : s.emptyText}>{value ?? 'Elegir'}</Text>
+      <Pressable style={[s.empty, lightPalette && { backgroundColor: lightPalette.cell, borderColor: lightPalette.border }]} onPress={() => setOpen(true)}>
+        <Text style={[value ? s.valueText : s.emptyText, lightPalette && { color: value ? lightPalette.ink : lightPalette.muted }]}>{value ?? 'Elegir'}</Text>
       </Pressable>
       {open ? (
         <DateTimePicker

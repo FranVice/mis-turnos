@@ -1,9 +1,28 @@
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { addDays, normalizeTime } from '../../../shared/lib/dates';
-import type { Person, SaveError, SaveResult, Shift, UsualSchedule } from '../types';
+import type { Person, SaveError, SaveResult, Shift, ShiftTemplate, UsualSchedule } from '../types';
 import type { Repo } from './repo';
 
-const SHIFT_COLUMNS = 'id, calendar_id, person_id, shift_date, kind, start_time, end_time, version, updated_by';
+const SHIFT_COLUMNS = 'id, calendar_id, person_id, shift_date, kind, start_time, end_time, version, updated_by, label';
+const TEMPLATE_COLUMNS = 'id, person_id, name, kind, start_time, end_time';
+
+interface TemplateRow {
+  id: string;
+  person_id: string;
+  name: string;
+  kind: ShiftTemplate['kind'];
+  start_time: string;
+  end_time: string;
+}
+
+const toTemplate = (r: TemplateRow): ShiftTemplate => ({
+  id: r.id,
+  personId: r.person_id,
+  name: r.name,
+  kind: r.kind,
+  start: normalizeTime(r.start_time),
+  end: normalizeTime(r.end_time),
+});
 
 interface ShiftRow {
   id: string;
@@ -15,6 +34,7 @@ interface ShiftRow {
   end_time: string;
   version: number;
   updated_by: string | null;
+  label: string | null;
 }
 
 function toShift(r: ShiftRow): Shift {
@@ -28,6 +48,7 @@ function toShift(r: ShiftRow): Shift {
     end: normalizeTime(r.end_time),
     version: r.version,
     updatedBy: r.updated_by,
+    label: r.label ?? null,
   };
 }
 
@@ -71,7 +92,7 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
     async loadPeople() {
       const { data, error } = await sb
         .from('people')
-        .select('id, calendar_id, display_name, initial, color, user_id')
+        .select('id, calendar_id, display_name, initial, color, user_id, shift_kinds')
         .order('sort_order');
       if (error) throw error;
       return (data ?? []).map(
@@ -82,6 +103,7 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
           initial: r.initial,
           color: r.color,
           userId: r.user_id,
+          shiftKinds: r.shift_kinds ?? null,
         }),
       );
     },
@@ -120,6 +142,7 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
           kind: input.kind,
           start_time: input.start,
           end_time: input.end,
+          label: input.label ?? null,
         })
         .select(SHIFT_COLUMNS)
         .single<ShiftRow>();
@@ -142,6 +165,7 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
         kind: input.kind,
         start_time: input.start,
         end_time: input.end,
+        label: input.label ?? null,
       }));
       const { data, error } = await sb
         .from('shifts')
@@ -162,6 +186,7 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
           kind: input.kind,
           start_time: input.start,
           end_time: input.end,
+          label: input.label ?? null,
         })
         .eq('id', shift.id)
         .eq('version', shift.version)
@@ -200,12 +225,39 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
       return { ok: true, value: null };
     },
 
+    async loadTemplates() {
+      const { data, error } = await sb.from('shift_templates').select(TEMPLATE_COLUMNS).order('name').returns<TemplateRow[]>();
+      if (error) throw error;
+      return (data ?? []).map(toTemplate);
+    },
+
+    async createTemplate(t) {
+      const { data, error } = await sb
+        .from('shift_templates')
+        .insert({ person_id: t.personId, name: t.name.trim(), kind: t.kind, start_time: t.start, end_time: t.end })
+        .select(TEMPLATE_COLUMNS)
+        .single<TemplateRow>();
+      if (error) {
+        if (error.code === '23505') return fail({ type: 'other', message: 'Ya tienes un turno con ese nombre' });
+        return fail(toError(error));
+      }
+      return { ok: true, value: toTemplate(data) };
+    },
+
+    async deleteTemplate(id) {
+      const { data, error } = await sb.from('shift_templates').delete().eq('id', id).select('id');
+      if (error) return fail(toError(error));
+      if (!data?.length) return fail({ type: 'other', message: 'Ese turno con nombre ya no existe' });
+      return { ok: true, value: null };
+    },
+
     subscribe(onChange) {
       const channel = sb
         .channel('nuestros-turnos')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'people' }, onChange)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'shifts' }, onChange)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'usual_schedules' }, onChange)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'shift_templates' }, onChange)
         .subscribe();
       return () => {
         sb.removeChannel(channel);

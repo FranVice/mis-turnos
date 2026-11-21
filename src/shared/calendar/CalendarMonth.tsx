@@ -40,7 +40,7 @@ export function CalendarMonth({ month, today, selected, marks, onSelect }: Props
         <View key={wi} style={s.week}>
           {week.map((date, di) =>
             date ? (
-              <Day key={date} date={date} isToday={date === today} isSelected={date === selected} mark={marks.get(date)} onSelect={onSelect} />
+              <Day key={date} date={date} isWeekend={di >= 5} isToday={date === today} isSelected={date === selected} mark={marks.get(date)} onSelect={onSelect} />
             ) : (
               <View key={`e${wi}-${di}`} style={[s.cell, s.cellEmpty]} />
             ),
@@ -53,12 +53,14 @@ export function CalendarMonth({ month, today, selected, marks, onSelect }: Props
 
 const Day = memo(function Day({
   date,
+  isWeekend,
   isToday,
   isSelected,
   mark,
   onSelect,
 }: {
   date: string;
+  isWeekend: boolean;
   isToday: boolean;
   isSelected: boolean;
   mark?: DayMark;
@@ -76,14 +78,15 @@ const Day = memo(function Day({
       style={(st: InteractionState) => [
         s.cell,
         webTransition,
-        pressFeedback(st, colors.elevated),
+        isWeekend && s.cellWeekend,
         isToday && s.cellToday,
         isSelected && s.cellSelected,
+        pressFeedback(st, isSelected ? tint(colors.primary, 0.26) : colors.elevated),
       ]}
     >
       <View style={s.top}>
         <View style={[s.num, isToday && s.numToday]}>
-          <Text style={[s.numText, isToday && s.numTodayText]}>{day}</Text>
+          <Text style={[s.numText, isWeekend && s.numWeekend, isToday && s.numTodayText]}>{day}</Text>
         </View>
         {mark?.letters?.length ? (
           <View style={s.letters}>
@@ -115,7 +118,7 @@ const Day = memo(function Day({
 
 const s = StyleSheet.create({
   weekHeader: { flexDirection: 'row', paddingBottom: 6, paddingTop: 2 },
-  weekday: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '700', color: colors.muted, letterSpacing: 0.6 },
+  weekday: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '800', color: colors.muted, letterSpacing: 0.6 },
   weekend: { color: colors.faint },
   week: { flexDirection: 'row' },
   cell: {
@@ -125,18 +128,20 @@ const s = StyleSheet.create({
     margin: 1.5,
     padding: 3,
     gap: 2,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     backgroundColor: colors.card,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: tint(colors.line, 0.55),
   },
-  cellEmpty: { backgroundColor: 'transparent' },
-  cellToday: { borderColor: colors.today, backgroundColor: tint(colors.today, 0.1) },
-  cellSelected: { borderColor: colors.selected, backgroundColor: colors.elevated },
+  cellEmpty: { backgroundColor: 'transparent', borderColor: 'transparent' },
+  cellWeekend: { backgroundColor: colors.surface },
+  cellToday: { borderColor: colors.today, backgroundColor: tint(colors.today, 0.13) },
+  cellSelected: { borderColor: colors.selected, backgroundColor: tint(colors.primary, 0.23) },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 2 },
   num: { minWidth: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   numToday: { backgroundColor: colors.today },
-  numText: { fontSize: 12, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
+  numText: { fontSize: 12, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+  numWeekend: { color: colors.muted },
   numTodayText: { color: colors.onPrimary, fontWeight: '800' },
   letters: { flexDirection: 'row', gap: 1, flexShrink: 1 },
   letter: { fontSize: 10, fontWeight: '900', lineHeight: 12 },

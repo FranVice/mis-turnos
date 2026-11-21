@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../../../shared/lib/dates';
-import { isAllDay, KIND_COLOR, KIND_LABEL, KIND_LETTER, type Person, type Shift } from '../types';
-import { colors, lighten, pressFeedback, radius, shadow, tint, webTransition, type InteractionState } from '../../../shared/theme';
+import { isAllDay, KIND_LABEL, KIND_LETTER, shiftTitle, type Person, type Shift } from '../types';
+import { radius, tint, webTransition, type InteractionState } from '../../../shared/theme';
+import { calendarPalette, shiftBadgeColors } from '../calendarPalette';
 
 interface Props {
   month: MonthRef;
@@ -42,6 +43,7 @@ export function MonthGrid({
               <DayCell
                 key={date}
                 date={date}
+                isWeekend={di >= 5}
                 isToday={date === today}
                 shifts={shiftsByDate.get(date)}
                 personById={personById}
@@ -62,6 +64,7 @@ export function MonthGrid({
 
 const DayCell = memo(function DayCell({
   date,
+  isWeekend,
   isToday,
   shifts,
   personById,
@@ -71,6 +74,7 @@ const DayCell = memo(function DayCell({
   onLongPress,
 }: {
   date: string;
+  isWeekend: boolean;
   isToday: boolean;
   shifts: Shift[] | undefined;
   personById: (id: string) => Person | undefined;
@@ -85,7 +89,7 @@ const DayCell = memo(function DayCell({
     (shifts?.length
       ? ', ' +
         shifts
-          .map((sh) => `${personById(sh.personId)?.name ?? ''}: ${KIND_LABEL[sh.kind]}${isAllDay(sh.kind) ? ', día completo' : ' de ' + sh.start + ' a ' + sh.end}`)
+          .map((sh) => `${personById(sh.personId)?.name ?? ''}: ${shiftTitle(sh)}${isAllDay(sh.kind) ? ', día completo' : ' de ' + sh.start + ' a ' + sh.end}`)
           .join(', ')
       : ', sin turnos');
 
@@ -97,34 +101,38 @@ const DayCell = memo(function DayCell({
       onPress={() => onPress(date)}
       onLongPress={() => onLongPress(date)}
       delayLongPress={350}
-      style={(state: InteractionState) => [
+      style={({ pressed, hovered }: InteractionState) => [
         s.cell,
         webTransition,
-        pressFeedback(state, colors.elevated),
+        isWeekend && s.cellWeekend,
+        hovered && s.cellHover,
         isToday && s.cellToday,
         isSelected && s.cellSelected,
+        hovered && (isToday || isSelected) && s.cellActiveHover,
+        pressed && s.cellPressed,
       ]}
     >
       <View style={s.dayRow}>
         <View style={[s.dayNumWrap, isToday && s.dayNumToday]}>
-          <Text style={[s.dayNum, isToday && s.dayNumTodayText]}>{day}</Text>
+          <Text style={[s.dayNum, isWeekend && s.dayNumWeekend, isToday && s.dayNumTodayText]}>{day}</Text>
         </View>
         {selecting ? <View style={[s.check, isSelected && s.checkOn]}>{isSelected ? <Text style={s.checkMark}>✓</Text> : null}</View> : null}
       </View>
       {shifts?.map((sh) => {
         const p = personById(sh.personId);
-        // Borde e inicial: color de la persona. Fondo: color del tipo de turno.
-        const personColor = lighten(p?.color ?? colors.muted, 0.3);
-        const kindColor = KIND_COLOR[sh.kind];
+        const personColor = p?.color ?? calendarPalette.muted;
+        const { backgroundColor, color } = shiftBadgeColors[sh.kind];
         return (
-          <View key={sh.id} style={[s.pill, { backgroundColor: tint(kindColor, 0.15), borderLeftColor: personColor }]}>
-            <Text style={[s.pillInitial, { color: personColor }]}>{p?.initial ?? '?'}</Text>
+          <View key={sh.id} style={s.pill}>
+            <Text style={[s.pillInitial, { backgroundColor: tint(personColor, 0.28) }]}>
+              {p?.initial ?? '?'}
+            </Text>
             {/* Turnos con horario: solo la letra (M, T, N); las horas se ven al tocar el día. */}
-            <View style={s.pillTimes}>
+            <View style={[s.pillKind, { backgroundColor }]}>
               {isAllDay(sh.kind) ? (
-                <Text style={[s.pillAllDay, { color: kindColor }]} numberOfLines={1}>{sh.kind === 'vacaciones' ? 'Vacac.' : KIND_LABEL[sh.kind]}</Text>
+                <Text style={[s.pillAllDay, { color }]} numberOfLines={1}>{sh.kind === 'vacaciones' ? 'Vac.' : KIND_LABEL[sh.kind]}</Text>
               ) : (
-                <Text style={[s.pillLetter, { color: kindColor }]} numberOfLines={1}>{KIND_LETTER[sh.kind]}</Text>
+                <Text style={[s.pillLetter, { color }]} numberOfLines={1}>{KIND_LETTER[sh.kind]}</Text>
               )}
             </View>
           </View>
@@ -136,8 +144,8 @@ const DayCell = memo(function DayCell({
 
 const s = StyleSheet.create({
   weekHeader: { flexDirection: 'row', paddingBottom: 6, paddingTop: 2 },
-  weekday: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '700', color: colors.muted, letterSpacing: 0.6 },
-  weekend: { color: colors.faint },
+  weekday: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '800', color: calendarPalette.muted, letterSpacing: 0.6 },
+  weekend: { color: calendarPalette.ink },
   week: { flexDirection: 'row' },
   cell: {
     flex: 1,
@@ -145,44 +153,43 @@ const s = StyleSheet.create({
     minHeight: 100,
     margin: 1.5,
     padding: 2,
-    borderRadius: radius.md,
-    backgroundColor: colors.card,
+    borderRadius: radius.sm,
+    backgroundColor: calendarPalette.cell,
     gap: 2,
     borderWidth: 1.5,
-    borderColor: 'transparent',
-    ...shadow.card,
+    borderColor: calendarPalette.border,
   },
-  cellEmpty: { backgroundColor: 'transparent', boxShadow: 'none' },
-  cellToday: { borderColor: colors.today, backgroundColor: tint(colors.today, 0.1) },
-  cellSelected: { borderColor: colors.selected, backgroundColor: colors.elevated },
+  cellEmpty: { backgroundColor: 'transparent', borderColor: 'transparent' },
+  cellWeekend: { backgroundColor: calendarPalette.weekend },
+  cellHover: { backgroundColor: calendarPalette.hover, borderColor: calendarPalette.muted },
+  cellToday: { borderColor: calendarPalette.todayBorder, backgroundColor: calendarPalette.todayCell },
+  cellSelected: { borderColor: calendarPalette.ink, backgroundColor: calendarPalette.selectedCell },
+  cellActiveHover: { backgroundColor: calendarPalette.hover },
+  cellPressed: { backgroundColor: calendarPalette.pressed },
   dayRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   dayNumWrap: { minWidth: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  dayNumToday: { backgroundColor: colors.today },
-  dayNum: { fontSize: 13, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
-  dayNumTodayText: { color: colors.onPrimary, fontWeight: '800' },
+  dayNumToday: { backgroundColor: calendarPalette.today, borderWidth: 1, borderColor: calendarPalette.todayBorder },
+  dayNum: { fontSize: 14, fontWeight: '800', color: calendarPalette.ink, fontVariant: ['tabular-nums'] },
+  dayNumWeekend: { color: calendarPalette.muted },
+  dayNumTodayText: { color: calendarPalette.onToday, fontWeight: '900' },
   check: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 1.5,
-    borderColor: colors.faint,
+    borderColor: calendarPalette.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  checkMark: { color: colors.onPrimary, fontSize: 10, fontWeight: '900', lineHeight: 12 },
+  checkOn: { backgroundColor: calendarPalette.ink, borderColor: calendarPalette.ink },
+  checkMark: { color: calendarPalette.cell, fontSize: 10, fontWeight: '900', lineHeight: 12 },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 5,
-    borderLeftWidth: 3,
-    paddingLeft: 2,
-    paddingRight: 1,
-    paddingVertical: 1,
-    gap: 2,
+    gap: 1,
   },
-  pillInitial: { fontSize: 10, fontWeight: '900', lineHeight: 15 },
-  pillTimes: { flex: 1 },
-  pillAllDay: { fontSize: 9, lineHeight: 15, fontWeight: '800' },
-  pillLetter: { fontSize: 14, lineHeight: 15, fontWeight: '900' },
+  pillInitial: { minWidth: 11, borderRadius: 4, overflow: 'hidden', color: calendarPalette.ink, fontSize: 9, fontWeight: '900', lineHeight: 17, textAlign: 'center' },
+  pillKind: { flex: 1, minWidth: 0, borderRadius: 4, paddingVertical: 1 },
+  pillAllDay: { fontSize: 9, lineHeight: 15, fontWeight: '800', textAlign: 'center' },
+  pillLetter: { fontSize: 13, lineHeight: 15, fontWeight: '900', textAlign: 'center' },
 });

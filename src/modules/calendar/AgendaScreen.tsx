@@ -8,7 +8,7 @@ import { compactRange, longDate, MonthRef, monthOf, monthRange, monthTitle, same
 import { colors, pressFeedback, radius, tint, webTransition, type InteractionState } from '../../shared/theme';
 import { Banner, ToastView, useToast } from '../../shared/ui';
 import { useAppData } from '../shifts/data/AppData';
-import { isAllDay, KIND_COLOR, KIND_LABEL, type Shift } from '../shifts/types';
+import { isAllDay, KIND_COLOR, shiftTitle, type Shift } from '../shifts/types';
 import { useTasks } from '../tasks/data/TasksData';
 import { EventForm, type EventFormMode } from './components/EventForm';
 import { useEvents } from './data/EventsData';
@@ -228,7 +228,7 @@ function AgendaRow({ item, first, personName, onPress }: { item: CalendarItem; f
     const sh = item.source;
     color = KIND_COLOR[sh.kind];
     time = isAllDay(sh.kind) ? 'Día' : compactRange(sh.start, sh.end);
-    title = `${personName(sh.personId)} · ${KIND_LABEL[sh.kind]}`;
+    title = `${personName(sh.personId)} · ${shiftTitle(sh)}`;
     detail = 'Turno';
     a11yHint = 'Abrir Turnos';
   } else if (item.type === 'event') {

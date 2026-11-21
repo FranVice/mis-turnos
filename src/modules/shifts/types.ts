@@ -32,7 +32,13 @@ export interface Person {
   initial: string;
   color: string;
   userId: string | null;
+  /** Tipos de turno que puede usar (null = todos). */
+  shiftKinds: ShiftKind[] | null;
 }
+
+/** Tipos de turno disponibles para una persona, en el orden habitual. */
+export const kindsFor = (person: Person | null | undefined): ShiftKind[] =>
+  person?.shiftKinds ? SHIFT_KINDS.filter((k) => person.shiftKinds!.includes(k)) : SHIFT_KINDS;
 
 export interface Shift {
   id: string;
@@ -44,7 +50,24 @@ export interface Shift {
   end: string; // HH:MM
   version: number;
   updatedBy: string | null;
+  /** Nombre del turno si se creó desde un turno con nombre (p. ej. «Partido»). */
+  label: string | null;
 }
+
+/** Turno con nombre guardado por una persona: nombre, tipo base y horas. */
+export interface ShiftTemplate {
+  id: string;
+  personId: string;
+  name: string;
+  kind: ShiftKind;
+  start: string;
+  end: string;
+}
+
+export type ShiftTemplateInput = Omit<ShiftTemplate, 'id'>;
+
+/** Texto del tipo de un turno: su nombre propio o el del tipo. */
+export const shiftTitle = (s: Pick<Shift, 'kind' | 'label'>) => s.label ?? KIND_LABEL[s.kind];
 
 export interface UsualSchedule {
   personId: string;
@@ -58,6 +81,7 @@ export interface ShiftInput {
   kind: ShiftKind;
   start: string;
   end: string;
+  label?: string | null;
 }
 
 export type SaveResult<T> =

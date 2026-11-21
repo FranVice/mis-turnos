@@ -9,7 +9,7 @@ import { FinancesProvider } from '../../modules/finances/data/FinancesData';
 import { TasksProvider } from '../../modules/tasks/data/TasksData';
 import { LoginScreen } from '../../shared/auth/LoginScreen';
 import { MODULES } from '../../shared/navigation/modules';
-import { colors } from '../../shared/theme';
+import { colors, tint } from '../../shared/theme';
 
 export default function TabsLayout() {
   const { authReady, signedIn, recovering } = useAppData();
@@ -32,7 +32,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.text,
+        tabBarActiveTintColor: colors.primary,
+        tabBarActiveBackgroundColor: tint(colors.primary, 0.1),
         tabBarInactiveTintColor: colors.faint,
         // Altura propia: la predeterminada (49) recorta las etiquetas en web.
         tabBarStyle: {

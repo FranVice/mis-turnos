@@ -2,6 +2,7 @@
 // cuadrícula de Inicio salen de aquí, así todos tienen el mismo peso.
 import type Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
+import { colors } from '../theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -30,7 +31,7 @@ export const MODULES: NexoModule[] = [
     title: 'Turnos',
     icon: 'briefcase-outline',
     iconActive: 'briefcase',
-    accent: '#638FFF',
+    accent: colors.primary,
     summary: 'Horarios de los dos',
     ready: true,
   },

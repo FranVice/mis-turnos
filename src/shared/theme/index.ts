@@ -4,20 +4,21 @@ import { Platform, type ViewStyle } from 'react-native';
 
 export const colors = {
   // Superficies, de más profunda a más elevada.
-  bg: '#101318',
-  surface: '#161B22', // hojas y barras
-  card: '#1C222B',
-  elevated: '#252D38',
-  line: '#343D4A',
+  bg: '#0D131D',
+  surface: '#131D2B', // hojas y barras
+  card: '#192537',
+  elevated: '#243650',
+  line: '#34465E',
   // Texto.
-  text: '#F5F7FA',
-  muted: '#A9B4C2',
-  faint: '#8792A2',
+  text: '#F4F7FF',
+  muted: '#B8C5D8',
+  faint: '#93A5BE',
   // Acento y estados.
-  primary: '#638FFF',
-  onPrimary: '#0D1422',
-  today: '#638FFF',
-  selected: '#F5F7FA',
+  primary: '#91B4FF',
+  primaryHover: '#B1CAFF',
+  onPrimary: '#101E36',
+  today: '#91B4FF',
+  selected: '#D8E6FF',
   danger: '#FF7A7A',
   dangerBg: '#3A1F24',
   warnBg: '#352C18',

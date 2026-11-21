@@ -10,6 +10,8 @@ import type {
   Shift,
   ShiftInput,
   ShiftKind,
+  ShiftTemplate,
+  ShiftTemplateInput,
   UsualSchedule,
 } from '../types';
 import { createDemoRepo, DEMO_USER_ID } from './demoRepo';
@@ -51,6 +53,10 @@ interface AppDataValue {
   deleteShift: (shift: Shift) => Promise<SaveResult<null>>;
   saveSchedule: (s: UsualSchedule) => Promise<SaveResult<UsualSchedule>>;
   deleteSchedule: (personId: string, kind: ShiftKind) => Promise<SaveResult<null>>;
+  // Turnos con nombre (cada uno ve solo los suyos)
+  templatesFor: (personId: string | null | undefined) => ShiftTemplate[];
+  createTemplate: (input: ShiftTemplateInput) => Promise<SaveResult<ShiftTemplate>>;
+  deleteTemplate: (id: string) => Promise<SaveResult<null>>;
 }
 
 const Ctx = createContext<AppDataValue | null>(null);
@@ -79,6 +85,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [people, setPeople] = useState<Person[]>([]);
   const [schedules, setSchedules] = useState<UsualSchedule[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [templates, setTemplates] = useState<ShiftTemplate[]>([]);
   const [today, setToday] = useState(todayISO());
   const [month, setMonth] = useState<MonthRef>(() => monthOf(todayISO()));
   const [loading, setLoading] = useState(false);
@@ -104,6 +111,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setPeople([]);
         setSchedules([]);
         setShifts([]);
+        setTemplates([]);
         setLoadError(null);
         setLoading(false);
       }
@@ -138,7 +146,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     if (supabase) { const {error} = await supabase.auth.signOut(); if (error) throw error; }
     ++requestId.current;
-    setPeople([]); setSchedules([]); setShifts([]); setRecovering(false);
+    setPeople([]); setSchedules([]); setShifts([]); setTemplates([]); setRecovering(false);
   }, []);
 
 
@@ -149,11 +157,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     const { from, to } = monthRange(monthRef.current);
     setLoading(true);
     try {
-      const [p, s, sh] = await Promise.all([repo.loadPeople(), repo.loadSchedules(), repo.loadShifts(from, to)]);
+      const [p, s, sh, tp] = await Promise.all([
+        repo.loadPeople(),
+        repo.loadSchedules(),
+        repo.loadShifts(from, to),
+        repo.loadTemplates(),
+      ]);
       if (id !== requestId.current) return; // llegó una consulta más reciente
       setPeople(p);
       setSchedules(s);
       setShifts(sh);
+      setTemplates(tp);
       setLoadError(null);
     } catch (e) {
       if (id === requestId.current) setLoadError(messageOf(e));
@@ -302,6 +316,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setSchedules(prev => prev.filter(s => !(s.personId === personId && s.kind === kind)));
     }), [mutate]);
 
+  const templatesFor = useCallback(
+    (personId: string | null | undefined) => templates.filter((t) => t.personId === personId),
+    [templates],
+  );
+
+  const createTemplate = useCallback((input: ShiftTemplateInput) =>
+    mutate(() => repo.createTemplate(input), value => {
+      setTemplates(prev => [...prev.filter(t => t.id !== value.id), value].sort((a, b) => a.name.localeCompare(b.name)));
+    }), [mutate]);
+
+  const deleteTemplate = useCallback((id: string) =>
+    mutate(() => repo.deleteTemplate(id), () => {
+      setTemplates(prev => prev.filter(t => t.id !== id));
+    }), [mutate]);
+
   const saveColor = useCallback((personId: string, color: string) =>
     mutate(() => repo.saveColor(personId, color), () => {
       setPeople(prev => prev.map(p => p.id === personId ? {...p, color} : p));
@@ -334,6 +363,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     deleteShift,
     saveSchedule,
     deleteSchedule,
+    templatesFor,
+    createTemplate,
+    deleteTemplate,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

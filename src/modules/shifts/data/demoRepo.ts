@@ -1,14 +1,14 @@
 // Modo demostración: datos ficticios en memoria. No se guarda nada en
 // Supabase y todo se pierde al cerrar la app.
 import { addDays, monthOf, monthRange, todayISO, weekdayIndex } from '../../../shared/lib/dates';
-import type { Person, Shift, ShiftInput, UsualSchedule } from '../types';
+import type { Person, Shift, ShiftInput, ShiftTemplate, UsualSchedule } from '../types';
 import type { Repo } from './repo';
 
 const CAL = 'demo-calendar';
 
 export const DEMO_PEOPLE: Person[] = [
-  { id: 'demo-franklin', calendarId: CAL, name: 'Franklin', initial: 'F', color: '#2563EB', userId: 'demo-user' },
-  { id: 'demo-almudena', calendarId: CAL, name: 'Almudena', initial: 'A', color: '#E8590C', userId: null },
+  { id: 'demo-franklin', calendarId: CAL, name: 'Franklin', initial: 'F', color: '#2563EB', userId: 'demo-user', shiftKinds: null },
+  { id: 'demo-almudena', calendarId: CAL, name: 'Almudena', initial: 'A', color: '#E8590C', userId: null, shiftKinds: ['manana', 'tarde', 'libre', 'vacaciones'] },
 ];
 
 export const DEMO_USER_ID = 'demo-user';
@@ -31,30 +31,30 @@ function seedShifts(): Shift[] {
         id: newId(), calendarId: CAL, personId: 'demo-franklin', date: day,
         kind: week === 0 ? 'manana' : 'tarde',
         start: week === 0 ? '06:00' : '14:00', end: week === 0 ? '14:00' : '22:00',
-        version: 1, updatedBy: null,
+        version: 1, updatedBy: null, label: null,
       });
     } else {
       shifts.push({
         id: newId(), calendarId: CAL, personId: 'demo-franklin', date: day,
-        kind: 'libre', start: '00:00', end: '00:00', version: 1, updatedBy: null,
+        kind: 'libre', start: '00:00', end: '00:00', version: 1, updatedBy: null, label: null,
       });
     }
     if (wd === 3 && Math.floor(i / 7) === 2) {
       shifts.push({
         id: newId(), calendarId: CAL, personId: 'demo-almudena', date: day,
-        kind: 'vacaciones', start: '00:00', end: '00:00', version: 1, updatedBy: null,
+        kind: 'vacaciones', start: '00:00', end: '00:00', version: 1, updatedBy: null, label: null,
       });
     }
     // Almudena: horarios variados, incluido alguno que acaba al día siguiente.
     if (wd === 0 || wd === 2 || wd === 4) {
       shifts.push({
         id: newId(), calendarId: CAL, personId: 'demo-almudena', date: day,
-        kind: 'manana', start: '08:30', end: '15:00', version: 1, updatedBy: null,
+        kind: 'manana', start: '08:30', end: '15:00', version: 1, updatedBy: null, label: null,
       });
     } else if (wd === 5) {
       shifts.push({
         id: newId(), calendarId: CAL, personId: 'demo-almudena', date: day,
-        kind: 'tarde', start: '18:00', end: '02:00', version: 1, updatedBy: null,
+        kind: 'tarde', start: '18:00', end: '02:00', version: 1, updatedBy: null, label: null,
       });
     }
     day = addDays(day, 1);
@@ -69,13 +69,18 @@ export function createDemoRepo(): Repo {
     { personId: 'demo-franklin', kind: 'manana', start: '06:00', end: '14:00' },
     { personId: 'demo-franklin', kind: 'tarde', start: '14:00', end: '22:00' },
     { personId: 'demo-franklin', kind: 'noche', start: '22:00', end: '06:00' },
+    { personId: 'demo-almudena', kind: 'manana', start: '08:00', end: '15:00' },
+    { personId: 'demo-almudena', kind: 'tarde', start: '15:00', end: '22:00' },
   ];
   const find = (personId: string, date: string) =>
     shifts.find((s) => s.personId === personId && s.date === date) ?? null;
   const build = (date: string, input: ShiftInput): Shift => ({
     id: newId(), calendarId: CAL, personId: input.personId, date, kind: input.kind,
-    start: input.start, end: input.end, version: 1, updatedBy: DEMO_USER_ID,
+    start: input.start, end: input.end, version: 1, updatedBy: DEMO_USER_ID, label: input.label ?? null,
   });
+  let templates: ShiftTemplate[] = [
+    { id: 'demo-tpl-1', personId: 'demo-franklin', name: 'Partido', kind: 'manana', start: '09:00', end: '13:00' },
+  ];
 
   return {
     async saveColor(personId, color) {
@@ -123,7 +128,7 @@ export function createDemoRepo(): Repo {
       }
       const clash = find(input.personId, shift.date);
       if (clash && clash.id !== shift.id) return { ok: false, error: { type: 'duplicate', existing: { ...clash } } };
-      Object.assign(current, input, { version: current.version + 1, updatedBy: DEMO_USER_ID });
+      Object.assign(current, input, { label: input.label ?? null, version: current.version + 1, updatedBy: DEMO_USER_ID });
       return { ok: true, value: { ...current } };
     },
     async deleteShift(shift) {
@@ -139,6 +144,22 @@ export function createDemoRepo(): Repo {
     },
     async deleteSchedule(personId, kind) {
       schedules = schedules.filter((x) => !(x.personId === personId && x.kind === kind));
+      return { ok: true, value: null };
+    },
+    async loadTemplates() {
+      return templates.map((t) => ({ ...t }));
+    },
+    async createTemplate(input) {
+      const name = input.name.trim();
+      if (templates.some((t) => t.personId === input.personId && t.name.toLowerCase() === name.toLowerCase())) {
+        return { ok: false, error: { type: 'other', message: 'Ya tienes un turno con ese nombre' } };
+      }
+      const t = { ...input, name, id: newId() };
+      templates = [...templates, t];
+      return { ok: true, value: { ...t } };
+    },
+    async deleteTemplate(id) {
+      templates = templates.filter((t) => t.id !== id);
       return { ok: true, value: null };
     },
     subscribe() {
