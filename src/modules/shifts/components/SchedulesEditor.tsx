@@ -5,6 +5,7 @@ import { isValidTime } from '../../../shared/lib/dates';
 import { KIND_COLOR, KIND_LABEL, kindsFor, Person, ShiftKind, ShiftTemplate, TIMED_KINDS } from '../types';
 import { TimeField } from '../../../shared/ui/TimeField';
 import { Banner, Button, colors, confirmAction, useToast } from '../../../shared/ui';
+import { ChangePassword } from '../../../shared/auth/ChangePassword';
 
 // «Horarios habituales»: horas por persona para rellenar el formulario.
 // Cambiarlas no modifica los turnos ya guardados.
@@ -35,6 +36,7 @@ export function SchedulesEditor({ onSignOut, footerInset }: { onSignOut?: () => 
           <Text style={s.accountText}>
             {isDemo ? 'Modo demostración (sin cuenta).' : `Sesión iniciada como ${me?.name ?? 'usuario sin vincular'}.`}
           </Text>
+          {!isDemo ? <ChangePassword /> : null}
           {!isDemo ? <Button title="Cerrar sesión" variant="secondary" onPress={onSignOut} /> : null}
         </View>
       ) : null}
