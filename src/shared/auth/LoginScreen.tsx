@@ -64,7 +64,7 @@ export function LoginScreen() {
             <View style={[s.logoDot, { backgroundColor: '#E8590C', marginLeft: -10 }]} />
           </View>
           <Text style={s.title}>Nexo</Text>
-          <Text style={s.subtitle}>{recovering ? 'Elige tu nueva contraseña.' : 'Vuestra organización familiar, en un solo lugar.'}</Text>
+          <Text style={s.subtitle}>{recovering ? 'Elige tu nueva contraseña.' : 'Organizad vuestros turnos y vuestro día a día en un solo lugar.'}</Text>
 
           <View style={s.form}>
             {!recovering && googleEnabled ? (

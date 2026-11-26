@@ -209,10 +209,10 @@ export function ShiftsScreen() {
           </Banner>
         ) : null}
         {!isDemo && !loading && !loadError && people.length > 0 && !me ? (
-          <Banner kind="warn">Tu cuenta no está vinculada a ninguna persona del calendario. Revisa el paso «Vincular cuentas» del README.</Banner>
+          <Banner kind="warn">Tu cuenta no está vinculada a este calendario. Cierra sesión y vuelve a entrar; si sigue igual, avisa a quien te dio acceso.</Banner>
         ) : null}
         {!isDemo && !loading && !loadError && people.length === 0 ? (
-          <Banner kind="warn">No tienes acceso a ningún calendario. Pide que vinculen tu cuenta desde la administración de Supabase.</Banner>
+          <Banner kind="warn">Todavía no tienes acceso a ningún calendario. Avisa a quien te dio acceso.</Banner>
         ) : null}
         {canInvitePartner ? (
           <Pressable
