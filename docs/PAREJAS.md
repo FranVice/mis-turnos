@@ -56,7 +56,10 @@ envía el navegador. La protección de los datos es RLS: una cuenta nueva solo v
 
 ## Despliegue (en este orden)
 
-Comprobado antes: en producción **no hay invitaciones** (la migración aún no está aplicada).
+Estado a 2026-11-26: la migración **ya está aplicada en producción** (paso 2 hecho y verificado:
+calendario marcado `family`, 89 turnos intactos, Franklin administrador, enlace general activo,
+0 invitaciones, filtro probado con SQL). La app publicada en `main` sigue funcionando igual: aún
+no usa las funciones nuevas. Pendientes: pasos 1, 3, 4, 5, 6, 7 y 8.
 
 1. **SMTP propio (obligatorio antes de abrir el registro).** El correo integrado de Supabase solo
    envía a miembros del equipo del proyecto y con un límite muy bajo por hora: los usuarios del
