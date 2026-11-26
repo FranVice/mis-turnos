@@ -108,6 +108,18 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
       );
     },
 
+    async loadSpace() {
+      const { data, error } = await sb.from('calendars').select('id, name, kind').limit(1).maybeSingle();
+      if (error) throw error;
+      return data ? { id: data.id, name: data.name, kind: data.kind === 'family' ? 'family' : 'shifts' } : null;
+    },
+
+    async amIAdmin() {
+      const { data, error } = await sb.rpc('am_i_admin');
+      if (error) return false;
+      return data === true;
+    },
+
     async loadSchedules() {
       const { data, error } = await sb.from('usual_schedules').select('person_id, kind, start_time, end_time');
       if (error) throw error;

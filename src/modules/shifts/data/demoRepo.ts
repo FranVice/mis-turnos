@@ -92,6 +92,12 @@ export function createDemoRepo(): Repo {
       await wait(100);
       return DEMO_PEOPLE;
     },
+    async loadSpace() {
+      return { id: CAL, name: 'Familia (demo)', kind: 'family' as const };
+    },
+    async amIAdmin() {
+      return true;
+    },
     async loadSchedules() {
       return schedules.map((s) => ({ ...s }));
     },

@@ -12,6 +12,7 @@ import type {
   ShiftKind,
   ShiftTemplate,
   ShiftTemplateInput,
+  Space,
   UsualSchedule,
 } from '../types';
 import { createDemoRepo, DEMO_USER_ID } from './demoRepo';
@@ -29,6 +30,14 @@ interface AppDataValue {
   signedIn: boolean;
   userId: string | null;
   signOut: () => Promise<void>;
+  // Espacio y permisos
+  /** Espacio de la cuenta; null mientras carga o si no pertenece a ninguno. */
+  space: Space | null;
+  /** true cuando ya se ha consultado el espacio al menos una vez en esta sesión. */
+  spaceLoaded: boolean;
+  /** Invitado de una pareja: solo puede usar Mis Turnos. */
+  shiftsOnly: boolean;
+  isAdmin: boolean;
   // Datos
   people: Person[];
   me: Person | null;
@@ -83,6 +92,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   // ---------- Datos ----------
   const [people, setPeople] = useState<Person[]>([]);
+  const [space, setSpace] = useState<Space | null>(null);
+  const [spaceLoaded, setSpaceLoaded] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [schedules, setSchedules] = useState<UsualSchedule[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [templates, setTemplates] = useState<ShiftTemplate[]>([]);
@@ -109,6 +121,9 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         ++sessionEpoch.current;
         ++requestId.current;
         setPeople([]);
+        setSpace(null);
+        setSpaceLoaded(false);
+        setIsAdmin(false);
         setSchedules([]);
         setShifts([]);
         setTemplates([]);
@@ -146,7 +161,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     if (supabase) { const {error} = await supabase.auth.signOut(); if (error) throw error; }
     ++requestId.current;
-    setPeople([]); setSchedules([]); setShifts([]); setTemplates([]); setRecovering(false);
+    setPeople([]); setSpace(null); setSpaceLoaded(false); setIsAdmin(false); setSchedules([]); setShifts([]); setTemplates([]); setRecovering(false);
   }, []);
 
 
@@ -157,13 +172,16 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     const { from, to } = monthRange(monthRef.current);
     setLoading(true);
     try {
-      const [p, s, sh, tp] = await Promise.all([
+      const [sp, p, s, sh, tp] = await Promise.all([
+        repo.loadSpace(),
         repo.loadPeople(),
         repo.loadSchedules(),
         repo.loadShifts(from, to),
         repo.loadTemplates(),
       ]);
       if (id !== requestId.current) return; // llegó una consulta más reciente
+      setSpace(sp);
+      setSpaceLoaded(true);
       setPeople(p);
       setSchedules(s);
       setShifts(sh);
@@ -185,6 +203,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     // Carga inicial del mes desde el repositorio externo.
     void Promise.resolve().then(refresh);
   }, [signedIn, month, refresh]);
+
+  // Rol de administrador (solo decide si se enseña el acceso al panel;
+  // cada función del panel lo vuelve a comprobar en el servidor).
+  useEffect(() => {
+    if (!signedIn || (!isDemo && !userId)) return;
+    let cancelled = false;
+    void repo.amIAdmin().then((v) => { if (!cancelled) setIsAdmin(v); });
+    return () => { cancelled = true; };
+  }, [signedIn, userId]);
 
   // Cambios desde el otro iPhone (con un pequeño margen para agrupar varios).
   useEffect(() => {
@@ -342,6 +369,10 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     signedIn,
     userId,
     signOut,
+    space,
+    spaceLoaded,
+    shiftsOnly: space?.kind === 'shifts',
+    isAdmin,
     people,
     me,
     personById,

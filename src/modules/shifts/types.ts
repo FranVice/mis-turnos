@@ -25,6 +25,14 @@ export const KIND_LETTER: Partial<Record<ShiftKind, string>> = {
 // Cada tipo de turno tiene su color (definido en el tema compartido).
 export const KIND_COLOR: Record<ShiftKind, string> = kindColors;
 
+/** Espacio: el familiar (todos los módulos) o el de una pareja invitada (solo Mis Turnos). */
+export type SpaceKind = 'family' | 'shifts';
+export interface Space {
+  id: string;
+  name: string;
+  kind: SpaceKind;
+}
+
 export interface Person {
   id: string;
   calendarId: string;

@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Banner, Button, colors } from '../ui';
 import { useAppData } from '../../modules/shifts/data/AppData';
 import { supabase } from '../lib/supabase';
+import { googleEnabled, signInWithGoogle } from './oauth';
 
-// Solo inicio de sesión: el registro público está desactivado y las
-// cuentas se crean desde el panel de Supabase.
+// Inicio de sesión con correo o Google. Las cuentas nuevas solo se crean
+// desde un enlace de invitación (/invitacion).
 export function LoginScreen() {
   const { recovering, finishRecovery } = useAppData();
   const [notice, setNotice] = useState<string | null>(null);
@@ -65,6 +66,17 @@ export function LoginScreen() {
           <Text style={s.subtitle}>{recovering ? 'Elige tu nueva contraseña.' : 'Vuestra organización familiar, en un solo lugar.'}</Text>
 
           <View style={s.form}>
+            {!recovering && googleEnabled ? (
+              <>
+                <Button
+                  title="Entrar con Google"
+                  variant="secondary"
+                  disabled={busy}
+                  onPress={async () => { setError(null); const msg = await signInWithGoogle('/'); if (msg) setError(msg); }}
+                />
+                <Text style={s.or}>o con tu correo</Text>
+              </>
+            ) : null}
             {!recovering ? <><Text style={s.label}>Correo</Text>
             <TextInput
               value={email}
@@ -113,6 +125,7 @@ const s = StyleSheet.create({
   title: { fontSize: 32, fontWeight: '800', color: colors.text, textAlign: 'center', letterSpacing: -0.8 },
   subtitle: { fontSize: 16, color: colors.muted, textAlign: 'center', marginBottom: 20 },
   form: { gap: 8 },
+  or: { fontSize: 13, color: colors.faint, textAlign: 'center' },
   label: { fontSize: 13, fontWeight: '700', color: colors.faint, textTransform: 'uppercase', letterSpacing: 0.8 },
   input: {
     minHeight: 52,

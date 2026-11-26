@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DayDetail } from './components/DaySheet';
 import { calendarButtons, calendarPalette } from './calendarPalette';
@@ -42,6 +43,7 @@ export function ShiftsScreen() {
   const [pullRefreshing, setPullRefreshing] = useState(false);
 
   const isCurrentMonth = sameMonth(month, monthOf(today));
+  const personIds = useMemo(() => people.map((p) => p.id), [people]);
 
   const goMonth = useCallback(
     (delta: number) => {
@@ -142,6 +144,11 @@ export function ShiftsScreen() {
         <IconButton label="Actualizar" onPress={refresh} disabled={loading}>
           {loading ? <ActivityIndicator color={colors.muted} /> : <Ionicons name="refresh" size={21} color={colors.text} />}
         </IconButton>
+        {data.isAdmin ? (
+          <IconButton label="Panel de parejas" onPress={() => router.push('/admin')}>
+            <Ionicons name="people-outline" size={21} color={colors.text} />
+          </IconButton>
+        ) : null}
         <IconButton label="Horarios habituales y cuenta" onPress={() => setSheet({ type: 'schedules' })}>
           <Ionicons name="settings-outline" size={21} color={colors.text} />
         </IconButton>
@@ -210,6 +217,7 @@ export function ShiftsScreen() {
             today={today}
             shiftsByDate={data.shiftsByDate}
             personById={data.personById}
+            personIds={personIds}
             selecting={selecting}
             selected={selected}
             onPressDay={onPressDay}

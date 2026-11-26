@@ -19,6 +19,9 @@ export const calendarPalette = {
   todayCell: '#ECF9F3',
   todayBorder: '#43846F',
   selectedCell: '#DCE9F8',
+  /** Día libre en común (los dos «Libre»). */
+  sharedFree: '#CDEFD6',
+  sharedFreeBorder: '#93CFA4',
 } as const;
 
 export const shiftBadgeColors: Record<ShiftKind, { backgroundColor: string; color: string }> = {

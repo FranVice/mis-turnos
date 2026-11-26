@@ -4,12 +4,15 @@ import { MonthRef, monthWeeks, parseISO, WEEKDAYS_SHORT } from '../../../shared/
 import { isAllDay, KIND_LABEL, KIND_LETTER, shiftTitle, type Person, type Shift } from '../types';
 import { radius, tint, webTransition, type InteractionState } from '../../../shared/theme';
 import { calendarPalette, shiftBadgeColors } from '../calendarPalette';
+import { isSharedFreeDay } from '../logic';
 
 interface Props {
   month: MonthRef;
   today: string;
   shiftsByDate: Map<string, Shift[]>;
   personById: (id: string) => Person | undefined;
+  /** Miembros del espacio: si todos están «Libre», el día se pinta en verde. */
+  personIds: readonly string[];
   selecting: boolean;
   selected: Set<string>;
   onPressDay: (date: string) => void;
@@ -21,6 +24,7 @@ export function MonthGrid({
   today,
   shiftsByDate,
   personById,
+  personIds,
   selecting,
   selected,
   onPressDay,
@@ -47,6 +51,7 @@ export function MonthGrid({
                 isToday={date === today}
                 shifts={shiftsByDate.get(date)}
                 personById={personById}
+                sharedFree={isSharedFreeDay(shiftsByDate.get(date), personIds)}
                 selecting={selecting}
                 isSelected={selected.has(date)}
                 onPress={onPressDay}
@@ -68,6 +73,7 @@ const DayCell = memo(function DayCell({
   isToday,
   shifts,
   personById,
+  sharedFree,
   selecting,
   isSelected,
   onPress,
@@ -78,6 +84,7 @@ const DayCell = memo(function DayCell({
   isToday: boolean;
   shifts: Shift[] | undefined;
   personById: (id: string) => Person | undefined;
+  sharedFree: boolean;
   selecting: boolean;
   isSelected: boolean;
   onPress: (date: string) => void;
@@ -91,7 +98,8 @@ const DayCell = memo(function DayCell({
         shifts
           .map((sh) => `${personById(sh.personId)?.name ?? ''}: ${shiftTitle(sh)}${isAllDay(sh.kind) ? ', día completo' : ' de ' + sh.start + ' a ' + sh.end}`)
           .join(', ')
-      : ', sin turnos');
+      : ', sin turnos') +
+    (sharedFree ? ', día libre en común' : '');
 
   return (
     <Pressable
@@ -107,6 +115,9 @@ const DayCell = memo(function DayCell({
         isWeekend && s.cellWeekend,
         hovered && s.cellHover,
         isToday && s.cellToday,
+        // Después de «hoy»: conserva su borde verde oscuro, pero el fondo pasa a verde claro.
+        sharedFree && s.cellSharedFree,
+        sharedFree && isToday && s.cellSharedFreeToday,
         isSelected && s.cellSelected,
         hovered && (isToday || isSelected) && s.cellActiveHover,
         pressed && s.cellPressed,
@@ -121,7 +132,9 @@ const DayCell = memo(function DayCell({
       {shifts?.map((sh) => {
         const p = personById(sh.personId);
         const personColor = p?.color ?? calendarPalette.muted;
-        const { backgroundColor, color } = shiftBadgeColors[sh.kind];
+        const badge = shiftBadgeColors[sh.kind];
+        // Sobre el fondo verde, la etiqueta «Libre» va en blanco para seguir destacando.
+        const { backgroundColor, color } = sharedFree && sh.kind === 'libre' ? { backgroundColor: calendarPalette.cell, color: badge.color } : badge;
         return (
           <View key={sh.id} style={s.pill}>
             <Text style={[s.pillInitial, { backgroundColor: tint(personColor, 0.28) }]}>
@@ -163,6 +176,8 @@ const s = StyleSheet.create({
   cellWeekend: { backgroundColor: calendarPalette.weekend },
   cellHover: { backgroundColor: calendarPalette.hover, borderColor: calendarPalette.muted },
   cellToday: { borderColor: calendarPalette.todayBorder, backgroundColor: calendarPalette.todayCell },
+  cellSharedFree: { backgroundColor: calendarPalette.sharedFree, borderColor: calendarPalette.sharedFreeBorder },
+  cellSharedFreeToday: { borderColor: calendarPalette.todayBorder },
   cellSelected: { borderColor: calendarPalette.ink, backgroundColor: calendarPalette.selectedCell },
   cellActiveHover: { backgroundColor: calendarPalette.hover },
   cellPressed: { backgroundColor: calendarPalette.pressed },

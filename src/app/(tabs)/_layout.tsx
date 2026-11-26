@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs, usePathname } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,12 +8,15 @@ import { EventsProvider } from '../../modules/calendar/data/EventsData';
 import { FinancesProvider } from '../../modules/finances/data/FinancesData';
 import { TasksProvider } from '../../modules/tasks/data/TasksData';
 import { LoginScreen } from '../../shared/auth/LoginScreen';
+import { NoAccessScreen } from '../../shared/auth/NoAccessScreen';
+import { ShiftsScreen } from '../../modules/shifts/ShiftsScreen';
 import { MODULES } from '../../shared/navigation/modules';
 import { colors, tint } from '../../shared/theme';
 
 export default function TabsLayout() {
-  const { authReady, signedIn, recovering } = useAppData();
+  const { authReady, signedIn, recovering, isDemo, space, spaceLoaded, shiftsOnly, loadError } = useAppData();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
 
   // Misma lógica que la antigua App.tsx: sin sesión (o recuperando contraseña) se muestra el acceso.
   if (!authReady) {
@@ -24,6 +27,25 @@ export default function TabsLayout() {
     );
   }
   if (!signedIn || recovering) return <LoginScreen />;
+
+  // Hasta saber qué espacio tiene la cuenta no se enseña ningún módulo.
+  if (!isDemo && !spaceLoaded) {
+    if (loadError) return <NoAccessScreen error={loadError} />;
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator accessibilityLabel="Cargando tu espacio" />
+      </View>
+    );
+  }
+  if (!isDemo && !space) return <NoAccessScreen />;
+
+  // Pareja invitada: solo Mis Turnos, sin barra de pestañas. Cualquier
+  // otra ruta (también escrita a mano) vuelve a /turnos. La base de datos
+  // aplica el mismo límite (políticas «solo espacio familiar»).
+  if (shiftsOnly) {
+    if (pathname !== '/turnos') return <Redirect href="/turnos" />;
+    return <ShiftsScreen />;
+  }
 
   return (
     <TasksProvider>

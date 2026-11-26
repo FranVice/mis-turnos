@@ -1,5 +1,6 @@
 import type {
   BulkResult,
+  Space,
   Person,
   SaveResult,
   Shift,
@@ -13,6 +14,10 @@ import type {
 export interface Repo {
   saveColor(personId: string, color: string): Promise<SaveResult<null>>;
   loadPeople(): Promise<Person[]>;
+  /** Espacio de la cuenta (familiar o solo turnos); null si no pertenece a ninguno. */
+  loadSpace(): Promise<Space | null>;
+  /** ¿La cuenta es administradora? (lo comprueba el servidor). */
+  amIAdmin(): Promise<boolean>;
   loadSchedules(): Promise<UsualSchedule[]>;
   loadShifts(from: string, to: string): Promise<Shift[]>;
   createShift(calendarId: string, date: string, input: ShiftInput): Promise<SaveResult<Shift>>;
