@@ -1,24 +1,36 @@
+import { router } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppData } from '../../modules/shifts/data/AppData';
 import { Banner, Button, colors } from '../ui';
+import { pendingInvite } from './oauth';
 
-// Cuenta sin espacio (aún no ha aceptado una invitación) o error al cargarlo.
+// Cuenta sin calendario (p. ej. confirmó el correo en otro dispositivo) o
+// error al cargarlo. Ofrece volver al enlace pendiente o crear su calendario.
 export function NoAccessScreen({ error }: { error?: string }) {
   const { signOut, refresh } = useAppData();
+  const invite = pendingInvite.get();
   return (
     <SafeAreaView style={s.safe}>
       <View style={s.content}>
-        <Text style={s.title}>{error ? 'No se ha podido cargar tu espacio' : 'Todavía no tienes acceso'}</Text>
+        <Text style={s.title}>{error ? 'No se ha podido cargar tu calendario' : 'Aún no tienes calendario'}</Text>
         {error ? (
-          <Banner kind="error">{error}</Banner>
+          <>
+            <Banner kind="error">{error}</Banner>
+            <Button title="Reintentar" onPress={refresh} />
+          </>
         ) : (
-          <Text style={s.text}>
-            Tu cuenta no pertenece a ningún espacio. Abre el enlace de invitación que te han enviado con esta misma cuenta.
-          </Text>
+          <>
+            <Text style={s.text}>
+              {invite
+                ? 'Tienes una invitación de tu pareja abierta en este móvil.'
+                : 'Crea tu calendario de turnos. Si tu pareja te ha invitado, abre su enlace con esta misma cuenta.'}
+            </Text>
+            {invite ? <Button title="Abrir la invitación de mi pareja" onPress={() => router.replace(`/invitacion?token=${invite}`)} /> : null}
+            <Button title="Crear mi calendario" variant={invite ? 'secondary' : 'primary'} onPress={() => router.replace('/unirse')} />
+          </>
         )}
-        <Button title="Reintentar" onPress={refresh} style={{ marginTop: 8 }} />
         <Button title="Cerrar sesión" variant="ghost" onPress={() => void signOut().catch(() => undefined)} />
       </View>
     </SafeAreaView>

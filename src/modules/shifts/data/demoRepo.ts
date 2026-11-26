@@ -93,7 +93,7 @@ export function createDemoRepo(): Repo {
       return DEMO_PEOPLE;
     },
     async loadSpace() {
-      return { id: CAL, name: 'Familia (demo)', kind: 'family' as const };
+      return { id: CAL, name: 'Familia (demo)', kind: 'family' as const, ownerId: null };
     },
     async amIAdmin() {
       return true;

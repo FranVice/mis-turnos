@@ -10,7 +10,7 @@ test('migraciones, RLS, noches, horario de verano y conflictos', async t => {
   const person='20000000-0000-0000-0000-000000000001', partner='20000000-0000-0000-0000-000000000002', stranger='20000000-0000-0000-0000-000000000003';
   try {
     await db.exec(`create role anon; create role authenticated; create schema auth;
-      create table auth.users(id uuid primary key, email text);
+      create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz, raw_user_meta_data jsonb default '{}');
       create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
       create publication supabase_realtime;

@@ -19,6 +19,7 @@ import { DayDetail } from './components/DaySheet';
 import { calendarButtons, calendarPalette } from './calendarPalette';
 import { MonthGrid } from './components/MonthGrid';
 import { SchedulesEditor } from './components/SchedulesEditor';
+import { PartnerInvite } from './components/PartnerInvite';
 import { FormMode, ShiftForm } from './components/ShiftForm';
 import { Banner, Button, colors, ToastView, useToast } from '../../shared/ui';
 import { lighten, pressFeedback, radius, tint, webTransition, type InteractionState } from '../../shared/theme';
@@ -29,7 +30,8 @@ import type { Shift } from './types';
 type Sheet =
   | { type: 'day'; date: string }
   | { type: 'form'; mode: FormMode; backToDay?: string }
-  | { type: 'schedules' };
+  | { type: 'schedules' }
+  | { type: 'partner' };
 
 export function ShiftsScreen() {
   const data = useAppData();
@@ -44,6 +46,8 @@ export function ShiftsScreen() {
 
   const isCurrentMonth = sameMonth(month, monthOf(today));
   const personIds = useMemo(() => people.map((p) => p.id), [people]);
+  // Quien creó un calendario de pareja y aún está solo puede invitar a su pareja.
+  const canInvitePartner = data.shiftsOnly && !!data.space?.ownerId && data.space.ownerId === data.userId && people.length === 1;
 
   const goMonth = useCallback(
     (delta: number) => {
@@ -145,7 +149,7 @@ export function ShiftsScreen() {
           {loading ? <ActivityIndicator color={colors.muted} /> : <Ionicons name="refresh" size={21} color={colors.text} />}
         </IconButton>
         {data.isAdmin ? (
-          <IconButton label="Panel de parejas" onPress={() => router.push('/admin')}>
+          <IconButton label="Panel de Mis Turnos" onPress={() => router.push('/admin')}>
             <Ionicons name="people-outline" size={21} color={colors.text} />
           </IconButton>
         ) : null}
@@ -209,6 +213,21 @@ export function ShiftsScreen() {
         ) : null}
         {!isDemo && !loading && !loadError && people.length === 0 ? (
           <Banner kind="warn">No tienes acceso a ningún calendario. Pide que vinculen tu cuenta desde la administración de Supabase.</Banner>
+        ) : null}
+        {canInvitePartner ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Invitar a mi pareja"
+            onPress={() => setSheet({ type: 'partner' })}
+            style={(state: InteractionState) => [s.inviteCard, webTransition, pressFeedback(state, calendarPalette.hover)]}
+          >
+            <Ionicons name="person-add-outline" size={22} color={calendarPalette.ink} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.inviteTitle}>Invitar a mi pareja</Text>
+              <Text style={s.inviteText}>Compartid este calendario y ved qué días libráis juntos.</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={calendarPalette.muted} />
+          </Pressable>
         ) : null}
 
         <View {...pan.panHandlers}>
@@ -314,6 +333,7 @@ export function ShiftsScreen() {
                 onOpenShift={(shift) => openEdit(shift, sheet.backToDay ?? (sheet.mode.type === 'create' ? sheet.mode.date : undefined))}
               />
             ) : null}
+            {sheet?.type === 'partner' ? <PartnerInvite myName={me?.name ?? ''} footerInset={insets.bottom} /> : null}
             {sheet?.type === 'schedules' ? (
               <SchedulesEditor
                 footerInset={insets.bottom}
@@ -431,6 +451,19 @@ const s = StyleSheet.create({
   scrollFrame: { backgroundColor: calendarPalette.background },
   scroll: { paddingHorizontal: 3, paddingBottom: 16, gap: 8 },
   tip: { textAlign: 'center', fontSize: 13, color: calendarPalette.muted, marginTop: 4 },
+  inviteCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: calendarPalette.todayBorder,
+    backgroundColor: calendarPalette.todayCell,
+  },
+  inviteTitle: { fontSize: 16, fontWeight: '800', color: calendarPalette.ink },
+  inviteText: { fontSize: 13, color: calendarPalette.muted, marginTop: 2 },
   bottomBar: {
     paddingHorizontal: 12,
     paddingTop: 10,

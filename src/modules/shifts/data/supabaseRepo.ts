@@ -109,9 +109,11 @@ export function createSupabaseRepo(sb: SupabaseClient): Repo {
     },
 
     async loadSpace() {
-      const { data, error } = await sb.from('calendars').select('id, name, kind').limit(1).maybeSingle();
+      const { data, error } = await sb.from('calendars').select('id, name, kind, created_by').limit(1).maybeSingle();
       if (error) throw error;
-      return data ? { id: data.id, name: data.name, kind: data.kind === 'family' ? 'family' : 'shifts' } : null;
+      return data
+        ? { id: data.id, name: data.name, kind: data.kind === 'family' ? 'family' : 'shifts', ownerId: data.created_by ?? null }
+        : null;
     },
 
     async amIAdmin() {

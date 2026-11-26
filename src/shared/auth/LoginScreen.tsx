@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,8 +7,8 @@ import { useAppData } from '../../modules/shifts/data/AppData';
 import { supabase } from '../lib/supabase';
 import { googleEnabled, signInWithGoogle } from './oauth';
 
-// Inicio de sesión con correo o Google. Las cuentas nuevas solo se crean
-// desde un enlace de invitación (/invitacion).
+// Inicio de sesión con correo o Google. Las cuentas nuevas se crean desde
+// el enlace general (/unirse) o desde una invitación de pareja (/invitacion).
 export function LoginScreen() {
   const { recovering, finishRecovery } = useAppData();
   const [notice, setNotice] = useState<string | null>(null);
@@ -110,6 +111,7 @@ export function LoginScreen() {
             {notice ? <Banner kind="ok">{notice}</Banner> : null}
             <Button title={recovering ? "Guardar contraseña" : "Entrar"} onPress={signIn} loading={busy} style={{ marginTop: 8 }} />
             {!recovering ? <Button title="He olvidado mi contraseña" variant="ghost" onPress={resetPassword} disabled={busy} /> : null}
+            {!recovering ? <Button title="¿Sin cuenta? Crear mi calendario de turnos" variant="ghost" onPress={() => router.push('/unirse')} disabled={busy} /> : null}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

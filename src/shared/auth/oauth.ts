@@ -19,11 +19,48 @@ export async function signInWithGoogle(path = '/'): Promise<string | null> {
   return error.message;
 }
 
+const local = (key: string) => ({
+  get: () => (typeof window === 'undefined' ? null : window.localStorage.getItem(key)),
+  set: (v: string) => { if (typeof window !== 'undefined') window.localStorage.setItem(key, v); },
+  clear: () => { if (typeof window !== 'undefined') window.localStorage.removeItem(key); },
+});
+
 // Invitación pendiente: se recuerda por si el regreso de Google o del
 // correo de confirmación pierde el enlace original.
-const INVITE_KEY = 'nexo.invite';
-export const pendingInvite = {
-  get: () => (typeof window === 'undefined' ? null : window.localStorage.getItem(INVITE_KEY)),
-  set: (token: string) => { if (typeof window !== 'undefined') window.localStorage.setItem(INVITE_KEY, token); },
-  clear: () => { if (typeof window !== 'undefined') window.localStorage.removeItem(INVITE_KEY); },
-};
+export const pendingInvite = local('nexo.invite');
+// Token para el que la persona ya dio su consentimiento (creó la cuenta o
+// entró desde ese mismo enlace): al volver se une sin otro toque.
+export const inviteConsent = local('nexo.invite.consent');
+
+/** Marca de alta desde la app; el hook de registro la exige (junto con las invitaciones). */
+export const SIGNUP_SOURCE = 'mis-turnos';
+
+const PROD_ORIGIN = 'https://nuestros-turnos.vercel.app';
+const origin = () => (Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.origin : PROD_ORIGIN);
+
+/** Enlace general permanente de Mis Turnos (se puede reenviar libremente). */
+export const generalLink = () => `${origin()}/unirse`;
+/** Enlace privado de invitación de pareja. */
+export const inviteLink = (token: string) => `${origin()}/invitacion?token=${token}`;
+
+/** Compartir (hoja nativa en iPhone, p. ej. WhatsApp) o, si no hay, copiar. Devuelve el resultado. */
+export async function shareOrCopy(message: string, url: string): Promise<'shared' | 'copied' | 'failed'> {
+  try {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share({ text: message, url });
+      return 'shared';
+    }
+  } catch (e) {
+    if ((e as { name?: string })?.name === 'AbortError') return 'failed';
+  }
+  return copyText(url);
+}
+
+export async function copyText(text: string): Promise<'copied' | 'failed'> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
+}

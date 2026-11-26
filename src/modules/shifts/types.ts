@@ -31,6 +31,8 @@ export interface Space {
   id: string;
   name: string;
   kind: SpaceKind;
+  /** Cuenta que creó el espacio (puede invitar a su pareja). Null en el familiar. */
+  ownerId: string | null;
 }
 
 export interface Person {
